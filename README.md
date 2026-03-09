@@ -25,6 +25,8 @@
 
 ## 배포 (GitHub Pages)
 
+**라이브**: https://m1zz.github.io/tech-interview-app
+
 ```bash
 git init
 git add .

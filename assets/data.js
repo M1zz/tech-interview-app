@@ -1,0 +1,1004 @@
+const QUESTIONS = [
+{id:1,cat:"알고리즘",q:"시간 복잡도(Time Complexity)와 공간 복잡도(Space Complexity)란 무엇인가요?",
+a:`<strong>시간 복잡도</strong>는 입력 크기 n에 따라 알고리즘 수행 시간이 얼마나 증가하는지 나타냅니다. <strong>공간 복잡도</strong>는 알고리즘 수행에 필요한 메모리 사용량입니다. 둘 다 <code>Big-O 표기법</code>으로 표현하며, 최선(Ω), 평균(Θ), 최악(O)으로 분석합니다. 예: 이진 탐색은 시간 <code>O(log n)</code>, 공간 <code>O(1)</code>입니다.`,
+links:[{t:"Big-O Cheat Sheet",u:"https://www.bigocheatsheet.com"},{t:"Visualgo",u:"https://visualgo.net/ko"}],
+fqs:[
+{q:"O(n log n) 알고리즘과 O(n²) 알고리즘의 실질적 성능 차이는 n=10,000일 때 얼마나 되나요?",a:`<strong>O(n log n)</strong>: 약 133,000번 연산. <strong>O(n²)</strong>: 100,000,000번 연산. 약 750배 차이입니다. n이 커질수록 격차는 기하급수적으로 벌어져서, n=1,000,000이면 O(n²)은 사실상 실행 불가능합니다.`},
+{q:"같은 O(n)이라도 실제 성능이 다를 수 있는 이유는 무엇인가요?",a:`Big-O는 <strong>상수 계수와 하위 항을 무시</strong>합니다. 예: <code>100n</code>도 <code>O(n)</code>, <code>2n</code>도 <code>O(n)</code>이지만 실제론 50배 차이. 또한 <strong>캐시 지역성</strong>: 배열이 연결 리스트보다 메모리 접근 패턴이 좋아 같은 O(n)이어도 배열이 훨씬 빠릅니다.`}
+],
+trap:{wrong:`"O(log n)은 O(n)보다 항상 빠르다. 어떤 입력이든, 어떤 n이든 상관없이 log n 알고리즘을 선택하는 것이 최선이다."`,
+explain:`<strong>틀린 이유</strong>: n이 매우 작을 때(예: n=5)는 상수 인자가 지배적이라 O(n)이 더 빠를 수 있습니다. Big-O는 <strong>점근적 분석</strong>이라 충분히 큰 n에서의 성장률 비교입니다. 실제로는 입력 크기, 캐시 효과, 상수 인자를 모두 고려해야 합니다.`}
+},
+{id:2,cat:"알고리즘",q:"Quick Sort와 Merge Sort의 차이점을 설명하세요.",
+a:`<strong>Quick Sort</strong>: pivot 기준 분할 정복, 평균 <code>O(n log n)</code>이지만 최악(이미 정렬된 경우) <code>O(n²)</code>. in-place 정렬로 공간 효율적. <strong>Merge Sort</strong>: 항상 <code>O(n log n)</code> 보장, 안정 정렬(stable sort). 단, <code>O(n)</code> 추가 공간 필요. 실무에선 두 알고리즘을 합친 <strong>Timsort</strong>를 표준 라이브러리가 사용합니다.`,
+links:[{t:"Sorting Visualizer",u:"https://visualgo.net/ko/sorting"},{t:"GeeksforGeeks QuickSort",u:"https://www.geeksforgeeks.org/quick-sort/"}],
+fqs:[
+{q:"Quick Sort에서 pivot 선택이 왜 중요하고, 좋은 pivot을 고르는 방법은?",a:`pivot이 항상 최솟값/최댓값이면 분할이 1:n-1로 편향되어 <code>O(n²)</code>로 저하됩니다. 좋은 전략: <strong>Random Pivot</strong>(무작위 선택으로 최악 케이스 확률 낮춤), <strong>Median of Three</strong>(첫/중간/마지막 원소의 중앙값). 실제 구현에서는 Lomuto 또는 Hoare 파티션 방식을 사용합니다.`},
+{q:"안정 정렬(stable sort)이 필요한 상황은 언제인가요?",a:`같은 키를 가진 원소들의 <strong>원래 순서가 유지</strong>되어야 할 때. 예: 학생 성적을 이름순으로 먼저 정렬한 후 점수순으로 다시 정렬할 때, 안정 정렬이면 동점자들이 이름순을 유지합니다. Java의 <code>Arrays.sort(Object[])</code>가 Merge Sort 기반인 이유입니다.`}
+],
+trap:{wrong:`"Merge Sort는 항상 Quick Sort보다 좋다. 왜냐하면 O(n log n)을 항상 보장하고 Quick Sort는 최악 O(n²)이기 때문이다."`,
+explain:`<strong>틀린 이유</strong>: 실제 성능은 캐시 지역성, 상수 인자, 데이터 특성에 따라 달라집니다. Quick Sort는 in-place라 캐시 효율이 좋고 상수 인자가 작아 <strong>평균적으로 Merge Sort보다 빠릅니다</strong>. 최악 케이스는 pivot 선택 전략으로 거의 완화할 수 있어 대부분의 실용 구현에서 Quick Sort가 선호됩니다.`}
+},
+{id:3,cat:"알고리즘",q:"동적 프로그래밍(Dynamic Programming)이란 무엇이고 언제 사용하나요?",
+a:`DP는 <strong>중복 부분 문제(Overlapping Subproblems)</strong>와 <strong>최적 부분 구조(Optimal Substructure)</strong>를 가진 문제를 풀 때 사용합니다. 부분 결과를 저장(메모이제이션)해 재계산을 방지합니다. <strong>Top-down</strong>(재귀 + 메모이제이션)과 <strong>Bottom-up</strong>(반복 + 테이블 채우기) 두 방식이 있습니다.`,
+links:[{t:"LeetCode DP Study Plan",u:"https://leetcode.com/studyplan/dynamic-programming/"},{t:"BOJ DP 문제집",u:"https://www.acmicpc.net/problemset?sort=ac_desc&algo=25"}],
+fqs:[
+{q:"DP와 분할 정복의 가장 큰 차이점은 무엇인가요?",a:`<strong>분할 정복</strong>: 부분 문제들이 독립적(서로 겹치지 않음). Merge Sort처럼 각 부분 결과를 재사용하지 않습니다. <strong>DP</strong>: 부분 문제들이 겹칩니다(중복 계산 발생). 이 중복을 메모이제이션으로 제거하는 것이 DP의 핵심입니다. 피보나치를 순수 재귀로 풀면 지수 시간이지만 DP로 풀면 선형 시간입니다.`},
+{q:"Bottom-up DP가 Top-down보다 실제로 성능이 좋은 이유는?",a:`<strong>함수 호출 오버헤드 없음</strong>: 재귀 스택 쌓기가 없어 메모리 효율적. <strong>캐시 지역성</strong>: 배열을 순서대로 접근하므로 캐시 히트율이 높습니다. <strong>스택 오버플로우 없음</strong>: 재귀 깊이 제한이 없습니다. 단, Bottom-up은 모든 상태를 계산하지만 Top-down은 실제 필요한 상태만 계산한다는 장점도 있습니다.`}
+],
+trap:{wrong:`"DP는 항상 재귀로 구현해야 하며, 메모이제이션 없이는 DP가 아니다."`,
+explain:`<strong>틀린 이유</strong>: DP는 재귀(Top-down)뿐 아니라 <strong>반복문(Bottom-up)</strong>으로도 구현됩니다. Bottom-up은 메모이제이션이 아닌 <strong>테이블 채우기(Tabulation)</strong> 방식으로, 오히려 더 효율적인 경우가 많습니다. DP의 본질은 "중복 계산 방지"이지 "재귀 사용"이 아닙니다.`}
+},
+{id:4,cat:"알고리즘",q:"BFS와 DFS의 차이점과 각각 적합한 사용 케이스를 설명하세요.",
+a:`<strong>BFS</strong>: Queue 사용, 레벨 순서 탐색, <strong>최단 경로(가중치 없는 그래프)</strong>에 적합. <strong>DFS</strong>: Stack/재귀 사용, 끝까지 파고들기, <strong>사이클 감지, 위상 정렬, 백트래킹, 미로 풀기</strong>에 적합. BFS는 목표에 가까운 해를, DFS는 모든 경우의 수를 탐색할 때 유리합니다.`,
+links:[{t:"BFS/DFS Visualization",u:"https://visualgo.net/ko/dfsbfs"},{t:"LeetCode Graph",u:"https://leetcode.com/tag/graph/"}],
+fqs:[
+{q:"BFS를 이용한 최단 경로 탐색이 DFS보다 보장이 되는 이유는?",a:`BFS는 <strong>레벨 순서(Level Order)</strong>로 탐색하기 때문에, 목표 노드를 처음 발견했을 때의 경로가 반드시 최단 경로입니다. DFS는 먼저 깊이 들어가기 때문에 목표를 찾아도 최단 경로가 아닐 수 있습니다. 단, 이는 <strong>가중치가 없거나 동일한 그래프</strong>에서만 성립합니다.`},
+{q:"연결 그래프에서 DFS를 완료했을 때 알 수 있는 정보는 무엇인가요?",a:`<strong>방문 순서(DFS 트리)</strong>와 <strong>백 엣지(Back Edge)</strong>를 통해 사이클 존재 여부를 알 수 있습니다. <strong>완료 시간(Finish Time)</strong>의 역순이 위상 정렬 순서가 됩니다. <strong>SCC(강한 연결 요소)</strong>도 DFS 두 번(Kosaraju 또는 Tarjan 알고리즘)으로 구할 수 있습니다.`}
+],
+trap:{wrong:`"DFS는 항상 BFS보다 메모리 효율이 좋다. DFS는 스택만 쓰고 BFS는 큐에 모든 이웃을 저장해야 하기 때문이다."`,
+explain:`<strong>틀린 이유</strong>: 최악의 경우 DFS는 재귀 호출로 <code>O(V)</code>의 스택 공간이 필요합니다. BFS도 <code>O(V)</code>이지만, <strong>트리 구조</strong>에서 BFS는 한 레벨만 저장(<code>O(너비)</code>)하고 DFS는 최대 깊이만큼 쌓습니다. 넓고 얕은 그래프에서는 DFS가, 좁고 깊은 그래프에서는 BFS가 메모리 효율적입니다.`}
+},
+{id:5,cat:"알고리즘",q:"이진 탐색(Binary Search)의 동작 원리와 시간 복잡도를 설명하세요.",
+a:`정렬된 배열에서 중간값과 목표를 비교해 탐색 범위를 절반씩 줄입니다. 시간 복잡도 <code>O(log n)</code>, 공간 <code>O(1)</code>. <strong>핵심 조건: 반드시 정렬된 배열이어야 합니다.</strong> 응용: lower_bound, upper_bound, 매개변수 탐색(파라메트릭 서치).`,
+links:[{t:"LeetCode Binary Search",u:"https://leetcode.com/explore/learn/card/binary-search/"},{t:"BOJ 이분탐색",u:"https://www.acmicpc.net/problemset?sort=ac_desc&algo=12"}],
+fqs:[
+{q:"이진 탐색 구현 시 `mid = (left + right) / 2` 대신 `mid = left + (right - left) / 2`를 쓰는 이유는?",a:`<code>(left + right)</code>가 int 최댓값을 초과하면 <strong>정수 오버플로우</strong>가 발생합니다. <code>left + (right - left) / 2</code>는 이를 방지합니다. C/Java에서 int 범위는 약 21억이므로, 인덱스가 클 때 실제 버그로 이어집니다. Google의 binary search 구현에도 이 버그가 있었다가 수정된 사례가 있습니다.`},
+{q:"매개변수 탐색(Parametric Search)이란 무엇인가요?",a:`최적화 문제를 <strong>결정 문제(가능/불가능)로 변환</strong>한 뒤 이진 탐색을 적용하는 기법입니다. "최솟값 최대화" 또는 "최댓값 최소화" 유형에 사용합니다. 예: 나무 자르기 문제에서 절단 높이 H를 이진 탐색하여 "H로 잘랐을 때 목재량이 M 이상인가?" 라는 결정 문제로 풀 수 있습니다.`}
+],
+trap:{wrong:`"이진 탐색은 항상 O(log n)이다. 정렬 여부에 상관없이 중간값과 비교하면 탐색 범위가 줄어든다."`,
+explain:`<strong>틀린 이유</strong>: 이진 탐색이 <code>O(log n)</code>임을 보장하려면 <strong>반드시 정렬된 배열</strong>이어야 합니다. 정렬되지 않은 배열에서 중간값과 비교해도 어느 쪽에 목표값이 있는지 알 수 없어 탐색 범위를 올바르게 줄일 수 없습니다. 정렬 없이 적용하면 오답이 나옵니다.`}
+},
+{id:6,cat:"알고리즘",q:"그리디 알고리즘이 항상 최적해를 보장하지 않는 이유를 설명하세요.",
+a:`그리디는 매 단계에서 <strong>현재 가장 좋아 보이는 선택</strong>을 하지만, 지역 최적(Local Optimum)이 전역 최적(Global Optimum)을 보장하지 않습니다. 그리디가 성립하려면 <strong>탐욕 선택 속성</strong>과 <strong>최적 부분 구조</strong>가 모두 필요합니다. 성립 예: 활동 선택, 허프만 코딩. 실패 예: 특정 동전 조합의 거스름돈 문제.`,
+links:[{t:"GeeksforGeeks Greedy",u:"https://www.geeksforgeeks.org/greedy-algorithms/"},{t:"LeetCode Greedy",u:"https://leetcode.com/tag/greedy/"}],
+fqs:[
+{q:"그리디로 풀 수 있는 문제인지 판별하는 방법은?",a:`<strong>두 가지를 증명</strong>해야 합니다. ① <strong>탐욕 선택 속성</strong>: 현재의 탐욕적 선택이 최적해에 포함됨. ② <strong>최적 부분 구조</strong>: 선택 후 남은 문제도 최적으로 풀면 전체 최적. 보통 "Exchange Argument"로 증명: 최적해에서 그리디 선택을 다른 것으로 바꿔도 결과가 나빠지지 않음을 보입니다.`},
+{q:"동전 거스름돈 문제에서 그리디가 실패하는 구체적 예를 드세요.",a:`동전: {1, 3, 4}원, 목표: 6원. 그리디: 4→1→1 = 3개. 최적: 3→3 = 2개. <strong>그리디가 실패하는 이유</strong>: 4원을 먼저 선택하면 나머지 2원을 3원짜리로 만들 수 없어 비효율이 발생합니다. 한국 동전({10, 50, 100, 500})처럼 큰 동전이 작은 동전의 배수일 때만 그리디가 항상 성립합니다.`}
+],
+trap:{wrong:`"그리디 알고리즘은 최적해를 보장하지 않으므로, DP로 풀 수 있다면 항상 DP를 사용해야 한다."`,
+explain:`<strong>틀린 이유</strong>: 그리디가 성립하는 문제(예: 다익스트라, 허프만, 크루스칼)에서는 그리디가 DP보다 훨씬 빠르고 간단합니다. 그리디가 올바르다는 것이 증명되면 DP보다 우선 선택해야 합니다. DP는 모든 경우를 고려하므로 그리디보다 시간/공간 복잡도가 큰 경우가 많습니다.`}
+},
+{id:7,cat:"알고리즘",q:"다익스트라와 벨만-포드 알고리즘의 차이를 설명하세요.",
+a:`<strong>다익스트라</strong>: 음수 가중치 없는 그래프, 우선순위 큐 사용 시 <code>O((V+E) log V)</code>. <strong>벨만-포드</strong>: 음수 가중치 처리 가능, 음수 사이클 감지 가능, <code>O(VE)</code>로 더 느림. 다익스트라는 GPS 최단 경로에, 벨만-포드는 금융 차익거래 감지나 음수 가중치 그래프에 사용합니다.`,
+links:[{t:"Dijkstra Visualization",u:"https://visualgo.net/ko/sssp"},{t:"BOJ 최단경로",u:"https://www.acmicpc.net/problem/1753"}],
+fqs:[
+{q:"다익스트라가 음수 가중치에서 실패하는 구체적인 예를 보여주세요.",a:`A→B = 5, A→C = 2, C→B = -10. 다익스트라: A에서 먼저 C(2)를 확정, 그 다음 B(5)를 확정합니다. 하지만 C→B = -10이므로 A→C→B = -8이 최단 경로입니다. 다익스트라는 B를 5로 이미 <strong>확정(visited)</strong>했으므로 -8을 발견하지 못합니다. 음수 간선이 있으면 "확정"이 보장되지 않습니다.`},
+{q:"SPFA(Shortest Path Faster Algorithm)란 무엇인가요?",a:`벨만-포드를 큐를 이용해 최적화한 알고리즘입니다. 큐에 있는 정점에서만 relaxation을 시도합니다. <strong>평균 <code>O(E)</code></strong>이지만 최악은 여전히 <code>O(VE)</code>입니다. 음수 가중치도 처리하면서 실용적으로 빠른 경우가 많아, 한국 PS 커뮤니티에서 자주 사용됩니다. 단, 경쟁 프로그래밍에서 worst case를 공략하는 테스트케이스가 있습니다.`}
+],
+trap:{wrong:`"음수 가중치가 있는 그래프에서는 벨만-포드로 항상 최단 경로를 구할 수 있다."`,
+explain:`<strong>틀린 이유</strong>: <strong>음수 사이클(Negative Cycle)이 있으면 최단 경로가 존재하지 않습니다.</strong> 음수 사이클을 무한히 돌면 경로 길이가 -∞가 되기 때문입니다. 벨만-포드는 음수 사이클을 "감지"할 수 있지만 이 경우 최단 경로를 구하지 못합니다. 사이클 감지 후 해당 정점은 -∞로 표시합니다.`}
+},
+{id:8,cat:"알고리즘",q:"해시 충돌(Hash Collision) 해결 방법에는 어떤 것들이 있나요?",
+a:`<strong>Open Addressing</strong>: 충돌 시 다른 버킷에 저장. Linear Probing, Quadratic Probing, Double Hashing. <strong>Separate Chaining</strong>: 각 버킷을 연결 리스트로 관리. Java HashMap은 버킷당 8개 이상이면 Red-Black Tree로 전환합니다. 부하율(Load Factor) 0.75 이하를 유지하는 것이 중요합니다.`,
+links:[{t:"Hash Table Visualization",u:"https://visualgo.net/ko/hashtable"},{t:"Java HashMap 내부구조",u:"https://d2.naver.com/helloworld/831311"}],
+fqs:[
+{q:"Linear Probing과 Double Hashing의 차이와 클러스터링 문제를 설명하세요.",a:`<strong>Linear Probing</strong>: 충돌 시 다음 칸으로 이동. 단순하지만 <strong>Primary Clustering</strong> 발생: 연속된 버킷이 채워져 충돌이 더 잦아집니다. <strong>Double Hashing</strong>: 두 번째 해시 함수로 탐사 간격을 결정. 클러스터링을 줄이지만 계산 비용 증가. Quadratic Probing은 중간 수준으로 <strong>Secondary Clustering</strong>이 있습니다.`},
+{q:"Python의 dict가 해시 충돌을 해결하는 방법은?",a:`Python 3.6+ dict는 <strong>Open Addressing + Compact Storage</strong>를 사용합니다. 인덱스 배열과 실제 데이터 배열을 분리하여 캐시 효율을 높입니다. Probing은 <code>i = (5*i + 1 + perturb) % size</code> 형태의 의사난수적 탐사를 사용합니다. 부하율 2/3을 초과하면 리해싱합니다. 또한 Python 3.7부터 삽입 순서를 보장합니다.`}
+],
+trap:{wrong:`"Open Addressing은 항상 Separate Chaining보다 메모리 효율이 좋다. Chaining은 추가 포인터가 필요하기 때문이다."`,
+explain:`<strong>조건부로만 맞습니다</strong>: 부하율이 낮을 때는 Open Addressing이 메모리 효율적입니다. 하지만 부하율이 높아지면 Open Addressing은 성능이 급격히 저하되어 더 큰 배열이 필요합니다. <strong>Separate Chaining</strong>은 부하율이 높아도 성능이 점진적으로 저하됩니다. 실제 메모리 사용량은 상황에 따라 다릅니다.`}
+},
+{id:9,cat:"알고리즘",q:"재귀(Recursion)와 반복(Iteration)의 차이점과 트레이드오프를 설명하세요.",
+a:`<strong>재귀</strong>: 코드 직관적, 분할 정복/트리 문제에 자연스럽지만 함수 호출 스택 오버헤드와 스택 오버플로우 위험. <strong>반복</strong>: 성능 좋고 메모리 효율적이지만 코드 복잡. 꼬리 재귀(Tail Recursion) 최적화를 지원하는 언어(Haskell, Scala)에서는 컴파일러가 재귀를 반복으로 변환합니다.`,
+links:[{t:"Tail Call Optimization",u:"https://exploringjs.com/es6/ch_tail-calls.html"}],
+fqs:[
+{q:"JavaScript에서 꼬리 재귀 최적화(TCO)가 실제로 동작하나요?",a:`ES6 명세에는 TCO가 포함되어 있지만, <strong>V8을 포함한 대부분의 JS 엔진이 실제로 구현하지 않았습니다</strong>. Safari(JavaScriptCore)만 구현했습니다. 따라서 실무 JS에서 깊은 재귀를 TCO에 의존하면 안 됩니다. 대신 <strong>트램폴린(Trampoline)</strong> 기법으로 수동으로 반복 변환하거나, 반복문을 직접 사용해야 합니다.`},
+{q:"트리 순회를 재귀 없이 반복으로 구현할 때 어떤 자료구조가 필요한가요?",a:`<strong>명시적 스택(Explicit Stack)</strong>이 필요합니다. 재귀가 내부적으로 콜 스택을 사용하는 것을 직접 시뮬레이션합니다. 전위/중위/후위 순회 모두 스택으로 구현 가능합니다. 레벨 순서 순회(BFS)는 큐를 사용합니다. 모리스 순회(Morris Traversal)는 추가 공간 없이 <code>O(1)</code>로 중위 순회가 가능합니다.`}
+],
+trap:{wrong:`"재귀 함수는 항상 반복으로 변환할 수 있으며, 변환하면 항상 더 빠르다."`,
+explain:`<strong>전반부는 맞지만 후반부는 틀립니다</strong>: 모든 재귀는 이론적으로 반복 + 명시적 스택으로 변환 가능합니다. 하지만 간단한 재귀(팩토리얼 등)를 반복으로 변환해도 성능 차이가 미미하거나 코드만 복잡해질 수 있습니다. TCO가 적용되는 경우나 단순 재귀는 성능 차이가 거의 없습니다. <strong>최적화는 실측 후 적용</strong>하는 것이 원칙입니다.`}
+},
+{id:10,cat:"알고리즘",q:"정렬되지 않은 배열에서 k번째로 큰 원소를 O(n)에 찾는 방법을 설명하세요.",
+a:`<strong>Quick Select</strong>: Quick Sort의 파티션을 활용해 pivot 위치가 k-1이면 반환, 아니면 한쪽만 재귀. 평균 <code>O(n)</code>, 최악 <code>O(n²)</code>. 또는 <strong>Min-Heap(크기 k)</strong>으로 <code>O(n log k)</code>에 해결. Median of Medians로 최악에도 <code>O(n)</code> 보장 가능.`,
+links:[{t:"LeetCode Kth Largest",u:"https://leetcode.com/problems/kth-largest-element-in-an-array/"},{t:"QuickSelect Algorithm",u:"https://www.geeksforgeeks.org/quickselect-algorithm/"}],
+fqs:[
+{q:"Min-Heap 크기 k를 이용한 방법의 장점은 언제 Quick Select보다 유리한가요?",a:`<strong>스트리밍 데이터</strong>(전체 배열이 메모리에 없는 경우)에서 유리합니다. 데이터를 한 번만 순서대로 처리하면서 크기 k의 힙을 유지합니다. 또한 Quick Select는 <strong>배열을 수정</strong>하지만 Min-Heap은 원본을 보존합니다. 읽기 전용 데이터나 온라인 알고리즘(데이터가 순서대로 들어오는)에서 Min-Heap이 적합합니다.`},
+{q:"Median of Medians가 O(n)을 보장하는 원리는?",a:`배열을 5개씩 그룹으로 나눠 각 그룹의 중앙값을 구하고, 그 중앙값들의 중앙값을 pivot으로 선택합니다. 이 pivot은 <strong>전체 원소의 적어도 30%보다 크고 30%보다 작음</strong>을 보장합니다. 따라서 파티션 후 한쪽이 최소 3n/10 이상 제거됩니다. T(n) = T(n/5) + T(7n/10) + O(n)을 마스터 정리로 풀면 T(n) = O(n)이 됩니다.`}
+],
+trap:{wrong:`"Quick Select의 평균 시간 복잡도는 O(n log n)이다. Quick Sort와 동일한 알고리즘 기반이기 때문이다."`,
+explain:`<strong>틀린 이유</strong>: Quick Select는 파티션 후 <strong>한쪽 절반만</strong> 재귀합니다. T(n) = T(n/2) + O(n)이 되어 등비급수로 T(n) = O(n)입니다. Quick Sort는 T(n) = 2T(n/2) + O(n)이라 O(n log n)이 됩니다. 핵심 차이는 Quick Sort는 양쪽 모두, Quick Select는 한쪽만 탐색한다는 것입니다.`}
+},
+{id:11,cat:"알고리즘",q:"투 포인터(Two Pointer) 기법이란 무엇이고 어떤 문제에 사용하나요?",
+a:`두 개의 인덱스를 동시에 이동시켜 탐색 복잡도를 줄이는 기법입니다. <strong>정렬된 배열에서 합이 특정 값인 쌍 찾기</strong>, 연속 부분 배열 합, 슬라이딩 윈도우 등에 사용합니다. O(n²)을 O(n)으로 줄일 수 있습니다.`,
+links:[{t:"BOJ 투 포인터",u:"https://www.acmicpc.net/problemset?sort=ac_desc&algo=80"},{t:"LeetCode Two Pointers",u:"https://leetcode.com/tag/two-pointers/"}],
+fqs:[
+{q:"슬라이딩 윈도우와 투 포인터의 차이는 무엇인가요?",a:`<strong>투 포인터</strong>: 두 포인터가 독립적으로 움직이며 수렴 또는 교차. 정렬이 필요한 경우가 많음. <strong>슬라이딩 윈도우</strong>: 고정 크기 또는 조건부 크기의 윈도우가 한 방향으로 이동. 두 포인터의 특수한 형태입니다. 차이: 슬라이딩 윈도우는 항상 같은 방향으로 이동하지만, 투 포인터는 양 끝에서 서로를 향해 이동하거나 다양한 방식으로 이동합니다.`},
+{q:"정렬되지 않은 배열에서 투 포인터를 사용할 수 없는 이유는?",a:`투 포인터가 동작하려면 <strong>포인터 이동의 방향 결정이 가능</strong>해야 합니다. 예: 합이 target보다 크면 오른쪽 포인터를 줄이고, 작으면 왼쪽 포인터를 늘립니다. 이는 배열이 정렬되어 있기 때문에 가능합니다. 정렬되지 않으면 포인터를 어느 방향으로 이동해야 할지 알 수 없어 정확한 탐색이 불가합니다.`}
+],
+trap:{wrong:`"투 포인터는 항상 배열의 양 끝에서 시작해 가운데로 이동한다."`,
+explain:`<strong>틀린 이유</strong>: 투 포인터는 다양한 형태로 사용됩니다. 양 끝 수렴형 외에도, <strong>같은 방향으로 이동하는 형태</strong>(슬라이딩 윈도우처럼 left, right 모두 왼쪽에서 오른쪽)도 투 포인터입니다. 연결 리스트의 사이클 감지(Fast & Slow 포인터)도 투 포인터의 한 종류입니다. 핵심은 "두 인덱스를 동시에 관리한다"는 것입니다.`}
+},
+{id:12,cat:"알고리즘",q:"분할 정복(Divide and Conquer)의 개념과 대표적인 알고리즘 예시를 설명하세요.",
+a:`<strong>분할(Divide) → 정복(Conquer) → 결합(Combine)</strong> 세 단계로 문제를 해결합니다. 대표 예: Merge Sort <code>O(n log n)</code>, Quick Sort, 이진 탐색 <code>O(log n)</code>, 카라츠바 곱셈. 마스터 정리(Master Theorem)로 복잡도를 분석합니다.`,
+links:[{t:"GeeksforGeeks D&C",u:"https://www.geeksforgeeks.org/divide-and-conquer/"}],
+fqs:[
+{q:"마스터 정리 T(n) = aT(n/b) + f(n)에서 세 경우를 설명하세요.",a:`a = 재귀 호출 수, b = 크기 감소 비율, f(n) = 분할+결합 비용. <strong>Case 1</strong>: f(n) = O(n^(log_b(a) - ε)) → T(n) = Θ(n^log_b(a)). 재귀가 지배. <strong>Case 2</strong>: f(n) = Θ(n^log_b(a)) → T(n) = Θ(n^log_b(a) · log n). 비슷. <strong>Case 3</strong>: f(n) = Ω(n^(log_b(a) + ε)) → T(n) = Θ(f(n)). f(n)이 지배. Merge Sort: T(n) = 2T(n/2) + O(n) → Case 2 → O(n log n).`},
+{q:"분할 정복 문제와 DP 문제를 구분하는 기준은 무엇인가요?",a:`<strong>부분 문제의 독립성</strong>으로 구분합니다. 분할 정복: 부분 문제들이 서로 겹치지 않아 중복 계산이 없음(Merge Sort의 각 절반은 완전히 독립). DP: 부분 문제들이 겹침(피보나치의 fib(n-1)과 fib(n-2)는 fib(n-3)을 공유). 겹치는 부분 문제 → DP, 독립적 부분 문제 → 분할 정복이 일반적 판별 기준입니다.`}
+],
+trap:{wrong:`"분할 정복은 항상 두 개의 동일한 크기로 분할해야 한다."`,
+explain:`<strong>틀린 이유</strong>: 분할 비율은 다양합니다. Quick Sort는 pivot에 따라 불균등하게 분할됩니다. 카라츠바 알고리즘은 특정 비율로 분할합니다. 이진 탐색은 항상 1:1로 분할하지만, 이는 필수 조건이 아닙니다. 중요한 것은 <strong>"더 작은 부분 문제로 나눈다"</strong>는 것이지 균등 분할이 아닙니다.`}
+},
+{id:13,cat:"알고리즘",q:"백트래킹(Backtracking)이란 무엇이고 어떤 문제에 효과적인가요?",
+a:`모든 가능한 경우를 탐색하되, <strong>유망하지 않은 경로는 가지치기(Pruning)</strong>해 탐색 공간을 줄이는 DFS 기반 기법입니다. N-Queens, 스도쿠, 부분집합 합, 순열/조합 생성에 사용합니다. 완전 탐색보다 효율적이나 최악은 지수 시간입니다.`,
+links:[{t:"BOJ N-Queens",u:"https://www.acmicpc.net/problem/9663"},{t:"LeetCode Backtracking",u:"https://leetcode.com/tag/backtracking/"}],
+fqs:[
+{q:"N-Queens 문제에서 가지치기를 어떻게 적용하나요?",a:`퀸 배치 시 세 가지 조건을 체크합니다. ① <strong>같은 열</strong>: col[] 배열 사용. ② <strong>왼쪽 대각선</strong>: (행-열)이 같으면 같은 대각선. ③ <strong>오른쪽 대각선</strong>: (행+열)이 같으면 같은 대각선. 다음 행에 퀸을 놓기 전에 이 세 조건을 확인해 위반하면 즉시 해당 위치를 건너뜁니다. 비트마스크로 구현하면 상수 시간에 체크 가능합니다.`},
+{q:"백트래킹 vs 완전탐색(Brute Force)의 실제 성능 차이는?",a:`N-Queens n=8에서: 완전탐색은 8^8 = 16,777,216 경우. 백트래킹은 약 15,720 경우만 탐색합니다(약 1000배 이상 감소). 가지치기의 효과는 문제마다 다르지만, 좋은 가지치기 조건을 설계하면 탐색 공간을 극적으로 줄일 수 있습니다. <strong>휴리스틱을 추가</strong>하면 더욱 효과적입니다(예: 가장 제약이 많은 변수 먼저).`}
+],
+trap:{wrong:`"백트래킹은 최적해를 보장하지 않는다. 가지치기 과정에서 최적해가 포함된 경로가 제거될 수 있다."`,
+explain:`<strong>틀린 이유</strong>: 올바른 백트래킹은 <strong>유망하지 않은(promising이 아닌) 경로만 제거</strong>합니다. 최적해를 포함하는 경로는 제거하지 않습니다. 가지치기 조건을 올바르게 설계하면 완전탐색과 동일한 결과를 보장하면서 더 빠릅니다. 다만 잘못된 가지치기 조건을 설계하면 최적해를 놓칠 수 있습니다.`}
+},
+{id:14,cat:"알고리즘",q:"MST를 구하는 크루스칼과 프림 알고리즘의 차이를 설명하세요.",
+a:`<strong>크루스칼</strong>: 간선 가중치 정렬 후 Union-Find로 사이클 없이 선택, <code>O(E log E)</code>, 희소 그래프에 유리. <strong>프림</strong>: 임의 정점 시작, 연결된 최소 가중치 간선 선택, 우선순위 큐 사용 시 <code>O((V+E) log V)</code>, 밀집 그래프에 유리.`,
+links:[{t:"MST Visualization",u:"https://visualgo.net/ko/mst"},{t:"BOJ MST 문제",u:"https://www.acmicpc.net/problem/1197"}],
+fqs:[
+{q:"MST가 유일하지 않을 수 있는 조건은?",a:`<strong>같은 가중치의 간선이 여러 개 존재할 때</strong> MST가 여러 개 가능합니다. 크루스칼에서 같은 가중치 간선의 선택 순서가 다를 수 있기 때문입니다. 단, 모든 간선의 가중치가 다르면 MST는 유일합니다. MST의 가중치 합(비용)은 항상 동일하지만 간선 구성이 다를 수 있습니다.`},
+{q:"Union-Find에서 경로 압축과 랭크 기반 합치기를 함께 사용하면 얼마나 빠른가요?",a:`두 최적화를 모두 적용하면 시간 복잡도가 <strong>O(α(n))</strong>입니다. α는 역 아커만 함수로 사실상 상수(n = 10^80에서도 α(n) ≤ 4)입니다. 경로 압축은 find 시 루트까지 모든 노드를 루트의 직접 자식으로 만들고, 랭크 기반 합치기는 낮은 랭크 트리를 높은 랭크 트리 아래에 붙입니다.`}
+],
+trap:{wrong:`"프림 알고리즘은 항상 크루스칼보다 느리다. 프림은 정점 하나씩 추가하는 방식이라 비효율적이기 때문이다."`,
+explain:`<strong>틀린 이유</strong>: 밀집 그래프(E ≈ V²)에서는 프림이 더 유리합니다. 크루스칼은 모든 간선을 정렬해야 하므로 <code>O(E log E) = O(V² log V)</code>이지만, 피보나치 힙을 사용한 프림은 <code>O(E + V log V)</code>로 더 빠릅니다. <strong>희소 그래프</strong>에서는 크루스칼이, <strong>밀집 그래프</strong>에서는 프림이 유리합니다.`}
+},
+{id:15,cat:"알고리즘",q:"비트 연산(Bit Manipulation)을 알고리즘에서 활용하는 방법을 설명하세요.",
+a:`비트 연산은 O(1) 수행으로 성능 최적화에 유용합니다. 홀짝 판별 <code>n&1</code>, 2의 거듭제곱 확인 <code>n&(n-1)==0</code>, 특정 비트 ON <code>n|(1<<k)</code>, XOR로 중복 찾기. 비트마스크 DP는 방문 상태를 정수로 표현해 메모리를 절약합니다.`,
+links:[{t:"Bit Tricks",u:"https://graphics.stanford.edu/~seander/bithacks.html"},{t:"LeetCode Bit Manipulation",u:"https://leetcode.com/tag/bit-manipulation/"}],
+fqs:[
+{q:"XOR을 이용해 추가 메모리 없이 두 변수를 swap하는 방법과 주의사항은?",a:`<code>a ^= b; b ^= a; a ^= b;</code>. 원리: XOR의 자기 자신과 연산은 0, 0과의 XOR은 자기 자신. <strong>주의사항</strong>: 두 변수가 같은 메모리 주소를 가리킬 때(a와 b가 같은 변수일 때) 0이 되어버립니다. 따라서 <code>if (a != b)</code>로 같은 변수가 아닐 때만 적용해야 합니다. 현대 컴파일러는 임시 변수 swap을 자동 최적화하므로 실용적 가치는 크지 않습니다.`},
+{q:"비트마스크 DP를 사용하는 TSP(외판원 순회) 문제의 상태 표현 방법은?",a:`n개 도시의 방문 여부를 <strong>n비트 정수</strong>로 표현합니다. dp[mask][i] = mask에 포함된 도시들을 방문하고 현재 도시 i에 있을 때의 최솟값. mask의 j번째 비트가 1이면 도시 j 방문. 상태 수는 2^n × n개, 시간 복잡도 <code>O(2^n × n²)</code>. n=20 정도까지 실용적입니다.`}
+],
+trap:{wrong:`"n & (n-1)이 0이면 n은 2의 거듭제곱이다. n = 0일 때도 이 조건이 성립하므로 0도 2의 거듭제곱이다."`,
+explain:`<strong>틀린 이유</strong>: <code>0 & (0-1) = 0 & (-1) = 0</code>이 맞지만, 0은 수학적으로 2의 거듭제곱이 아닙니다. 올바른 검사: <code>n > 0 && (n & (n-1)) == 0</code>. 비슷하게 음수도 잘못된 결과를 낼 수 있으므로, 양의 정수임을 먼저 확인해야 합니다.`}
+},
+{id:16,cat:"자료구조",q:"배열(Array)과 연결 리스트(Linked List)의 차이점을 설명하세요.",
+a:`<strong>배열</strong>: 연속 메모리, 인덱스 접근 <code>O(1)</code>, 삽입/삭제 <code>O(n)</code>, 크기 고정. <strong>연결 리스트</strong>: 노드+포인터, 임의 접근 <code>O(n)</code>, 삽입/삭제(위치 알면) <code>O(1)</code>, 포인터 오버헤드. 배열이 캐시 지역성(cache locality)에서 유리합니다.`,
+links:[{t:"Array vs LinkedList",u:"https://www.geeksforgeeks.org/linked-list-vs-array/"},{t:"Linked List Visualization",u:"https://visualgo.net/ko/list"}],
+fqs:[
+{q:"실제로 배열이 연결 리스트보다 캐시 면에서 유리한 이유를 구체적으로 설명하세요.",a:`CPU는 메모리를 캐시 라인 단위(보통 64바이트)로 읽습니다. 배열은 연속 메모리라 한 번 캐시 라인을 로드하면 <strong>인접 원소들이 이미 캐시에 있습니다</strong>(공간 지역성). 연결 리스트는 각 노드가 힙 어딘가에 흩어져 있어 next 포인터를 따라갈 때마다 캐시 미스가 발생합니다. 실험적으로 연결 리스트 순회가 배열보다 5~10배 느린 경우도 있습니다.`},
+{q:"Java의 ArrayList와 LinkedList 중 언제 어느 것을 선택해야 하나요?",a:`<strong>ArrayList 선택</strong>: 임의 접근이 빈번, 데이터 순서대로 읽기, 끝에 추가/삭제(amortized O(1)). <strong>LinkedList 선택</strong>: 중간 삽입/삭제가 매우 빈번하고 인덱스 접근은 드문 경우, Deque(양쪽 삽입/삭제) 사용. 실제로 현대 하드웨어에서 캐시 효과로 인해 <strong>대부분의 경우 ArrayList가 더 빠릅니다</strong>. LinkedList는 사용 사례가 매우 제한적입니다.`}
+],
+trap:{wrong:`"연결 리스트는 배열보다 메모리를 적게 사용한다. 크기를 미리 지정하지 않아도 되기 때문이다."`,
+explain:`<strong>틀린 이유</strong>: 연결 리스트는 각 노드에 <strong>포인터(참조)를 추가로 저장</strong>해야 합니다. 단일 연결 리스트는 노드당 데이터+포인터 1개, 이중은 포인터 2개. 정수 배열이면 4바이트이지만 연결 리스트 노드는 8~20바이트(포인터 포함)가 됩니다. 배열의 "미리 할당" 낭비가 없는 장점은 있지만, 포인터 오버헤드 때문에 연결 리스트가 항상 메모리 효율적이라고 볼 수 없습니다.`}
+},
+{id:17,cat:"자료구조",q:"스택(Stack)과 큐(Queue)의 특징과 활용 사례를 설명하세요.",
+a:`<strong>스택</strong>: LIFO, 재귀 호출 스택, 브라우저 뒤로가기, 괄호 매칭, DFS. <strong>큐</strong>: FIFO, 프로세스 스케줄링, 프린터 대기열, BFS. <strong>덱(Deque)</strong>: 양쪽 삽입/삭제 가능. 모든 연산 <code>O(1)</code>.`,
+links:[{t:"Stack/Queue Visualization",u:"https://visualgo.net/ko/list"},{t:"BOJ 스택 문제",u:"https://www.acmicpc.net/problem/10828"}],
+fqs:[
+{q:"단조 스택(Monotonic Stack)이란 무엇이고 어떤 문제를 효율적으로 푸나요?",a:`항상 단조 증가 또는 단조 감소를 유지하는 스택입니다. <strong>오큰수(NGE, Next Greater Element)</strong> 문제를 <code>O(n)</code>에 풉니다. 각 원소를 순서대로 처리하면서, 스택 top보다 큰 원소가 들어오면 스택을 pop하여 현재 원소가 pop된 원소의 오큰수가 됩니다. 히스토그램에서 가장 큰 직사각형, 트랩 레인워터 문제에도 적용됩니다.`},
+{q:"큐를 이용한 BFS에서 방문 표시를 enqueue 시점에 해야 하는 이유는?",a:`dequeue 시점에 방문 표시를 하면 같은 노드가 큐에 여러 번 들어갈 수 있습니다. 예: A→B, A→C, B→C 그래프에서 C가 B와 A에 의해 각각 큐에 추가됩니다. <strong>enqueue 시점에 방문 표시</strong>를 하면 C는 처음 추가될 때만 표시되어 중복이 방지됩니다. 이로 인해 시간 복잡도가 O(V+E)로 보장됩니다.`}
+],
+trap:{wrong:`"스택과 큐는 서로 다른 자료구조라 상호 변환이 불가능하다."`,
+explain:`<strong>틀린 이유</strong>: <strong>스택 2개로 큐 구현</strong>(inbox/outbox 패턴)이 가능하며, amortized O(1)로 동작합니다. 반대로 <strong>큐 2개로 스택 구현</strong>도 가능합니다(push 또는 pop이 O(n)). 상호 변환이 가능합니다. 면접에서 자주 나오는 실제 코딩 문제이기도 합니다.`}
+},
+{id:18,cat:"자료구조",q:"이진 탐색 트리(BST)의 특징과 균형 BST가 필요한 이유를 설명하세요.",
+a:`BST는 <strong>왼쪽<루트<오른쪽</strong> 속성, 탐색/삽입/삭제 평균 <code>O(log n)</code>. 정렬된 데이터 삽입 시 편향 트리(최악 <code>O(n)</code>). 해결: <strong>AVL Tree</strong>(엄격한 균형), <strong>Red-Black Tree</strong>(느슨한 균형, 실용적). Java TreeMap, C++ std::map이 Red-Black Tree 기반입니다.`,
+links:[{t:"BST Visualization",u:"https://visualgo.net/ko/bst"},{t:"Red-Black Tree",u:"https://www.cs.usfca.edu/~galles/visualization/RedBlack.html"}],
+fqs:[
+{q:"AVL Tree와 Red-Black Tree 중 어떤 것이 더 실용적이고 그 이유는?",a:`<strong>Red-Black Tree</strong>가 더 실용적입니다. AVL은 최대 높이 차가 1이라 더 균형잡히지만, 삽입/삭제마다 <strong>더 많은 회전</strong>이 필요합니다. Red-Black Tree는 최대 높이가 2log(n+1)로 약간 느슨하지만 삽입/삭제 시 회전이 최대 2~3번으로 제한됩니다. 읽기 집중적 작업에는 AVL, 쓰기 집중적 작업에는 Red-Black이 유리합니다.`},
+{q:"BST의 중위 순회(Inorder Traversal) 결과가 항상 정렬된 배열인 이유는?",a:`중위 순회는 <strong>왼쪽 → 루트 → 오른쪽</strong> 순서입니다. BST 속성에 의해 왼쪽 서브트리의 모든 값 < 루트 < 오른쪽 서브트리의 모든 값입니다. 재귀적으로 이 속성이 모든 노드에 성립하므로, 중위 순회 시 항상 오름차순으로 방문하게 됩니다. 이를 이용해 BST 정렬을 구현할 수 있습니다.`}
+],
+trap:{wrong:`"균형 BST에 n개의 원소를 삽입하면 항상 O(n log n)이다. 각 삽입이 O(log n)이기 때문이다."`,
+explain:`<strong>맞습니다</strong>, 하지만 중요한 조건이 있습니다: <strong>균형을 유지하는 오버헤드(회전)가 포함된 O(n log n)</strong>입니다. 일반 BST에 정렬된 데이터를 삽입하면 편향 트리가 되어 O(n²)이 됩니다. 균형 BST(AVL, Red-Black)는 삽입마다 균형 복구 과정이 있어 O(log n)을 유지하지만, 이 회전 연산 비용을 간과하면 안 됩니다.`}
+},
+{id:19,cat:"자료구조",q:"힙(Heap)이란 무엇이고 우선순위 큐와의 관계를 설명하세요.",
+a:`<strong>힙</strong>: 완전 이진 트리, 부모가 자식보다 크거나(Max-Heap) 작음(Min-Heap). 배열로 구현, 인덱스 i의 부모 <code>(i-1)/2</code>. 우선순위 큐를 힙으로 구현 시 삽입/삭제 <code>O(log n)</code>, 최솟값/최댓값 조회 <code>O(1)</code>. 다익스트라, 힙 정렬에 활용.`,
+links:[{t:"Heap Visualization",u:"https://visualgo.net/ko/heap"},{t:"LeetCode Heap Problems",u:"https://leetcode.com/tag/heap-priority-queue/"}],
+fqs:[
+{q:"힙 구성(Heapify)을 O(n)에 할 수 있는 이유를 설명하세요.",a:`단순하게 n번 삽입하면 <code>O(n log n)</code>이지만, 배열을 주면 <code>O(n)</code>에 힙을 만들 수 있습니다. 방법: 절반 지점(마지막 내부 노드)부터 루트까지 역순으로 <strong>sift-down</strong>을 적용합니다. 분석: 리프 노드(n/2개)는 sift-down 불필요, 높이 h인 노드의 sift-down 비용은 O(h). 전체 합이 O(n)으로 수렴합니다(등비급수 합).`},
+{q:"중앙값을 실시간으로 구하는(Median of a Stream) 효율적인 방법은?",a:`<strong>두 개의 힙</strong>을 사용합니다. Max-Heap(하위 절반)과 Min-Heap(상위 절반). 두 힙의 크기 차가 1 이하가 되도록 균형을 유지합니다. 중앙값: 원소 개수가 홀수면 더 큰 힙의 top, 짝수면 두 힙 top의 평균. 각 삽입 후 O(log n)에 중앙값 유지 가능합니다.`}
+],
+trap:{wrong:`"우선순위 큐는 힙으로만 구현할 수 있다."`,
+explain:`<strong>틀린 이유</strong>: 우선순위 큐는 <strong>ADT(추상 자료 타입)</strong>이고 힙은 그 구현 방법 중 하나입니다. 정렬된 배열, 정렬된 연결 리스트, 피보나치 힙, B-Tree 등으로도 구현 가능합니다. 힙이 가장 실용적이지만 유일한 구현은 아닙니다. 피보나치 힙은 삽입/decrease-key가 <code>O(1)</code>로 이론적으로 더 빠릅니다.`}
+},
+{id:20,cat:"자료구조",q:"해시 테이블(Hash Table)의 동작 원리를 설명하세요.",
+a:`<strong>키를 해시 함수로 변환</strong>해 배열 인덱스로 매핑, 평균 <code>O(1)</code> 검색/삽입/삭제. 좋은 해시 함수: 균등 분포, 빠른 계산, 결정론적. 부하율이 임계치(보통 0.75) 초과 시 리해싱으로 배열 크기를 늘립니다.`,
+links:[{t:"Hash Table Visualization",u:"https://visualgo.net/ko/hashtable"},{t:"HashMap 내부 구조",u:"https://d2.naver.com/helloworld/831311"}],
+fqs:[
+{q:"해시 함수의 품질을 평가하는 기준은 무엇인가요?",a:`① <strong>균등 분포</strong>: 키들이 버킷에 고르게 분배되어야 합니다. ② <strong>결정론성</strong>: 같은 키는 항상 같은 해시값. ③ <strong>빠른 계산</strong>: O(1)에 가까워야 함. ④ <strong>눈사태 효과(Avalanche Effect)</strong>: 입력의 작은 변화가 해시값을 크게 변화시켜야 충돌을 줄입니다. MurmurHash, FNV-1a, SipHash 등 실용적인 해시 함수들이 이 기준들을 만족합니다.`},
+{q:"리해싱(Rehashing)은 언제 필요하고 어떤 비용이 드나요?",a:`부하율(저장된 항목 / 버킷 수)이 임계값(보통 0.75)을 초과할 때 리해싱을 수행합니다. 새 배열(보통 2배 크기)을 할당하고 모든 항목을 새 해시값으로 재배치합니다. 비용: <code>O(n)</code>. 하지만 리해싱은 n번의 삽입에 한 번만 발생하므로, 분할 상환 분석으로 삽입의 평균 비용은 <code>O(1)</code>입니다.`}
+],
+trap:{wrong:`"해시 테이블의 탐색은 항상 O(1)이다."`,
+explain:`<strong>평균 O(1)이지만 최악은 O(n)</strong>입니다. 해시 충돌이 많이 발생하거나 해시 함수가 편향되면 한 버킷에 모든 항목이 몰려 탐색이 <code>O(n)</code>으로 저하됩니다. 또한 Java HashMap은 버킷당 8개 초과시 Red-Black Tree로 전환되어 <code>O(log n)</code>으로 제한됩니다. "평균 O(1)"이 정확한 표현입니다.`}
+},
+{id:21,cat:"자료구조",q:"트라이(Trie) 자료구조의 특징과 사용 사례를 설명하세요.",
+a:`문자열 저장 트리 구조, 루트→리프 경로가 하나의 문자열. 검색 <code>O(m)</code>(m=문자열 길이), 해시 충돌 없음. 메모리 사용 많음. 자동완성, 사전 검색, IP 라우팅에 활용. Compressed Trie로 메모리 최적화 가능.`,
+links:[{t:"Trie Visualization",u:"https://www.cs.usfca.edu/~galles/visualization/Trie.html"},{t:"LeetCode Trie",u:"https://leetcode.com/tag/trie/"}],
+fqs:[
+{q:"트라이에서 메모리 최적화를 위한 방법들을 설명하세요.",a:`① <strong>Compressed Trie(Radix Tree)</strong>: 자식이 하나인 노드를 합쳐서 압축. URL 라우팅에 사용. ② <strong>해시맵으로 자식 저장</strong>: 배열 대신 HashMap 사용해 실제 사용 문자만 저장. ③ <strong>Double Array Trie</strong>: 두 배열로 트라이를 압축 표현. ④ <strong>비트 벡터 활용</strong>: 존재 여부를 비트마스크로 표현. Go의 HTTP 라우터 httprouter가 Radix Tree 기반입니다.`},
+{q:"트라이 vs 해시셋(HashSet) 문자열 검색 성능 비교를 설명하세요.",a:`<strong>검색</strong>: 트라이 O(m), 해시셋 O(m)(해시 계산에 O(m) 필요). <strong>메모리</strong>: 해시셋이 일반적으로 적음. <strong>트라이가 유리한 경우</strong>: 접두사 검색(트라이 O(m), 해시셋 불가), 공통 접두사 공유로 유사 문자열이 많을 때 메모리 절약, 사전 순서 열거(트라이 자연스러움). 해시셋은 정확한 일치 검색에, 트라이는 접두사 기반 검색에 유리합니다.`}
+],
+trap:{wrong:`"트라이의 검색 시간 복잡도는 O(n)이다. n개의 문자열이 저장되어 있기 때문이다."`,
+explain:`<strong>틀린 이유</strong>: 트라이의 검색 시간은 저장된 문자열 수 n과 무관하게 <strong>검색어의 길이 m</strong>에만 비례합니다. O(m)입니다. 이것이 트라이의 핵심 장점입니다. 100만 개의 문자열이 저장되어 있어도 7자리 단어 검색은 7단계면 충분합니다. n에 비례하는 것은 빌드 시 전체 메모리 사용량입니다.`}
+},
+{id:22,cat:"자료구조",q:"Union-Find(Disjoint Set) 자료구조를 설명하세요.",
+a:`서로소 집합 관리 자료구조, Find(집합 찾기)와 Union(합치기) 연산. 경로 압축 + 랭크 기반 합치기 최적화 시 사실상 <code>O(1)</code>(역 아커만 함수). 크루스칼 MST, 사이클 감지에 활용.`,
+links:[{t:"Union-Find Visualization",u:"https://visualgo.net/ko/ufds"},{t:"BOJ 유니온 파인드",u:"https://www.acmicpc.net/problem/1717"}],
+fqs:[
+{q:"경로 압축(Path Compression)을 구현하는 코드를 설명하세요.",a:`<code>int find(int x) { if (parent[x] != x) parent[x] = find(parent[x]); return parent[x]; }</code>. find를 재귀 호출하면서 돌아올 때 모든 노드의 부모를 루트로 직접 연결합니다. 다음 find 시 <strong>루트까지 한 단계</strong>로 도달합니다. 비재귀 버전: while로 루트 찾은 뒤 다시 순회하며 parent를 루트로 업데이트.`},
+{q:"Union-Find로 사이클을 감지하는 방법은?",a:`간선 (u, v)를 추가할 때 <code>find(u) == find(v)</code>이면 같은 집합에 이미 속해 있으므로 사이클이 형성됩니다. 크루스칼 알고리즘에서 간선을 추가하기 전에 이 검사를 수행합니다. 사이클이 없으면 union(u, v)로 합칩니다. 방향 그래프에서는 DFS를 이용한 back edge 감지가 더 일반적입니다.`}
+],
+trap:{wrong:`"Union-Find는 집합의 합치기(Union)만 지원하고, 한 번 합쳐진 집합은 분리(Split)할 수 없다."`,
+explain:`<strong>맞습니다</strong>: 표준 Union-Find는 분리를 지원하지 않습니다. 하지만 이는 설계 선택입니다. Link-Cut Tree와 같은 고급 자료구조는 분리도 지원합니다. 표준 Union-Find의 핵심 한계는 "분리 불가"이며, 이 점을 인지하고 사용해야 합니다. 오프라인 알고리즘에서 시간을 역순으로 처리해 Union을 역방향으로 사용하는 우회 방법도 있습니다.`}
+},
+{id:23,cat:"자료구조",q:"세그먼트 트리(Segment Tree)란 무엇이고 어떤 문제를 해결하나요?",
+a:`배열의 <strong>구간 쿼리(Range Query)</strong>를 효율적으로 처리하는 완전 이진 트리. 구간 합/최솟값/최댓값을 <code>O(log n)</code>에 쿼리하고 업데이트. 전처리 <code>O(n log n)</code>, 공간 <code>O(n)</code>. Lazy Propagation으로 구간 업데이트도 <code>O(log n)</code> 가능.`,
+links:[{t:"BOJ 세그먼트 트리",u:"https://www.acmicpc.net/problem/2042"},{t:"CP-Algorithms",u:"https://cp-algorithms.com/data_structures/segment_tree.html"}],
+fqs:[
+{q:"Lazy Propagation이 필요한 상황과 동작 원리를 설명하세요.",a:`구간 업데이트(예: [l, r] 구간의 모든 원소에 v를 더하기)를 매번 개별 업데이트하면 <code>O(n log n)</code>이 됩니다. <strong>Lazy Propagation</strong>: 각 노드에 lazy 태그를 저장하고, 실제로 필요할 때만(자식 노드 접근 시) propagation합니다. 노드를 방문할 때 lazy 값을 적용하고 자식에게 전파합니다. 이로써 구간 업데이트도 <code>O(log n)</code>으로 처리됩니다.`},
+{q:"펜윅 트리(Fenwick Tree/BIT)와 세그먼트 트리의 차이는?",a:`<strong>펜윅 트리</strong>: 구현 간단(배열 하나), 메모리 효율적(O(n)), 구간 합 쿼리/포인트 업데이트만 지원. 비트 연산 기반으로 빠름. <strong>세그먼트 트리</strong>: 구현 복잡하지만 더 범용적(최솟값, 최댓값, GCD 등 모든 결합 연산), Lazy Propagation으로 구간 업데이트 지원. 구간 합만 필요하면 펜윅 트리가 코드도 간단하고 빠릅니다.`}
+],
+trap:{wrong:`"세그먼트 트리는 배열이 변하지 않는 정적인 경우에만 사용할 수 있다."`,
+explain:`<strong>틀린 이유</strong>: 세그먼트 트리의 핵심 강점 중 하나가 <strong>동적 업데이트</strong>입니다. 포인트 업데이트(단일 원소 변경)를 <code>O(log n)</code>에 처리할 수 있습니다. 정적 배열 구간 쿼리만 필요하다면 오히려 Sparse Table이 더 효율적입니다(구간 최솟값/최댓값을 <code>O(1)</code> 쿼리, 단 업데이트 불가).`}
+},
+{id:24,cat:"자료구조",q:"그래프의 인접 행렬과 인접 리스트를 비교하세요.",
+a:`<strong>인접 행렬</strong>: V×V 배열, 공간 <code>O(V²)</code>, 연결 확인 <code>O(1)</code>, 이웃 탐색 <code>O(V)</code>, 밀집 그래프에 적합. <strong>인접 리스트</strong>: 공간 <code>O(V+E)</code>, 이웃 탐색 <code>O(degree(v))</code>, 희소 그래프에 적합. 대부분의 실제 그래프는 희소하므로 인접 리스트가 일반적으로 선호됩니다.`,
+links:[{t:"Graph Representation",u:"https://www.geeksforgeeks.org/graph-and-its-representations/"}],
+fqs:[
+{q:"소셜 네트워크 그래프를 표현할 때 인접 리스트가 인접 행렬보다 유리한 이유는?",a:`소셜 네트워크는 수억 명의 사용자가 있지만 한 사람의 평균 친구 수는 수백~수천으로 제한됩니다. <strong>인접 행렬</strong>: 10억 × 10억 = 10¹⁸개의 셀 → 실질적으로 불가능. <strong>인접 리스트</strong>: O(V + E)로 희소 그래프에 적합. 실제로 페이스북은 그래프를 인접 리스트 방식으로 저장하며 Neo4j 같은 그래프 DB를 사용합니다.`},
+{q:"가중치 그래프에서 인접 행렬과 인접 리스트를 어떻게 표현하나요?",a:`<strong>인접 행렬</strong>: adj[i][j] = 가중치 (연결 없으면 0 또는 INF). <strong>인접 리스트</strong>: 각 리스트 항목을 (이웃 정점, 가중치) 쌍으로 저장. C++에서 <code>vector&lt;vector&lt;pair&lt;int,int&gt;&gt;&gt;</code> 형태. 다익스트라는 인접 리스트로 구현 시 더 효율적입니다.`}
+],
+trap:{wrong:`"인접 행렬에서 특정 정점의 모든 이웃을 찾는 작업은 O(1)이다."`,
+explain:`<strong>틀린 이유</strong>: 인접 행렬에서 특정 정점 v의 모든 이웃을 찾으려면 v의 행을 전부 스캔해야 합니다. 이는 <strong>O(V)</strong>입니다. O(1)인 연산은 두 정점 u, v가 직접 연결되어 있는지 확인하는 것(adj[u][v] != 0)입니다. 이 차이가 BFS/DFS에서 인접 리스트가 유리한 핵심 이유입니다.`}
+},
+{id:25,cat:"자료구조",q:"스택 2개로 큐를 구현하는 방법을 설명하세요.",
+a:`<strong>inbox, outbox</strong> 두 스택 사용. enqueue: inbox에 push. dequeue: outbox가 비면 inbox의 모든 원소를 outbox로 이동 후 pop. <strong>분할 상환 분석으로 dequeue 평균 O(1)</strong>. 각 원소는 최대 2번(inbox→outbox) 이동합니다.`,
+links:[{t:"LeetCode - Queue using Stacks",u:"https://leetcode.com/problems/implement-queue-using-stacks/"}],
+fqs:[
+{q:"분할 상환 분석(Amortized Analysis)으로 dequeue의 평균 비용이 O(1)임을 증명하세요.",a:`<strong>잠재 함수(Potential Function) Φ = inbox 스택 크기</strong>. enqueue: 실제 비용 1 + ΔΦ = 1 + 1 = 2 (amortized). dequeue(outbox 비지 않음): 비용 1 + ΔΦ = 1 + 0 = 1. dequeue(outbox 빔, inbox에 k개): 실제 비용 k+1, ΔΦ = -k. Amortized 비용 = k+1-k = 1. 따라서 모든 연산의 amortized 비용이 <code>O(1)</code>입니다.`},
+{q:"큐 2개로 스택을 구현할 때 push와 pop 중 어느 것을 O(n)으로 하는 게 나을까요?",a:`보통 <strong>push를 O(n)</strong>으로 하는 방식이 선호됩니다. push 시: 새 원소를 빈 큐에 enqueue하고, 다른 큐의 모든 원소를 이 큐로 이동. pop 시: O(1)로 front를 dequeue. 이렇게 하면 peek도 O(1)입니다. 대안(pop을 O(n)으로)은 push O(1)이지만 pop 시마다 매번 이동해야 합니다. 일반적으로 pop/peek가 더 자주 호출되므로 이를 O(1)로 유지하는 전략이 유리합니다.`}
+],
+trap:{wrong:`"스택 2개로 큐를 구현하면 dequeue의 최악 시간 복잡도가 O(n)이므로, 이 구현은 비효율적이다."`,
+explain:`<strong>최악 케이스만 보면 맞지만 실용적으로는 틀립니다</strong>: dequeue의 최악은 O(n)이지만, <strong>분할 상환 평균은 O(1)</strong>입니다. 각 원소는 inbox에서 outbox로 최대 한 번만 이동하기 때문입니다. 실용 시스템에서 amortized O(1)은 매우 효율적이며, Java의 ArrayDeque도 유사한 방식으로 동작합니다.`}
+},
+{id:26,cat:"자료구조",q:"B-Tree가 데이터베이스 인덱스에 주로 사용되는 이유를 설명하세요.",
+a:`B-Tree는 균형 다진 탐색 트리로 모든 리프가 같은 깊이. <strong>노드 크기를 디스크 블록 크기(4KB)에 맞춰</strong> 디스크 I/O를 최소화. B+Tree는 리프 노드에만 데이터, 리프가 연결되어 범위 쿼리에 효율적. MySQL InnoDB가 B+Tree 사용.`,
+links:[{t:"B-Tree Visualization",u:"https://www.cs.usfca.edu/~galles/visualization/BTree.html"},{t:"B+Tree vs B-Tree",u:"https://www.geeksforgeeks.org/difference-between-b-tree-and-b-tree/"}],
+fqs:[
+{q:"B-Tree가 BST 대신 사용되는 이유를 디스크 I/O 관점에서 설명하세요.",a:`BST의 각 노드는 포인터를 따라가는 랜덤 접근이 필요합니다. 디스크에서 랜덤 I/O는 매우 느립니다(HDD: ~10ms). B-Tree는 <strong>한 노드에 수백 개의 키</strong>를 저장해 트리 높이를 낮춥니다(100만 레코드 → 높이 3~4). 페이지 단위로 읽어오면 한 번의 I/O로 많은 키를 처리합니다. SSD에서도 랜덤 I/O보다 순차 I/O가 효율적이어서 B+Tree가 여전히 유리합니다.`},
+{q:"B+Tree에서 범위 쿼리(Range Query)가 빠른 이유는?",a:`B+Tree의 리프 노드들은 <strong>이중 연결 리스트로 연결</strong>되어 있습니다. 범위의 시작 키를 트리에서 찾은 후, 리프를 따라 순서대로 읽으면 됩니다. 트리를 다시 탐색할 필요 없이 O(range_size)로 범위 스캔이 가능합니다. B-Tree(B+Tree가 아닌)는 내부 노드에도 데이터가 있어 중위 순회가 필요하여 더 복잡합니다.`}
+],
+trap:{wrong:`"B-Tree와 B+Tree는 같은 자료구조이다. B+Tree는 단순히 더 최적화된 B-Tree이다."`,
+explain:`<strong>틀린 이유</strong>: 구조적으로 다릅니다. <strong>B-Tree</strong>: 모든 노드(내부+리프)에 실제 데이터 저장. <strong>B+Tree</strong>: 내부 노드는 키만(인덱스 역할), 실제 데이터는 리프 노드에만 존재. 리프 노드가 연결 리스트로 연결. 이 구조 차이로 B+Tree는 범위 쿼리에 훨씬 유리하고 내부 노드에 더 많은 키를 저장할 수 있어 트리가 더 넓어집니다.`}
+},
+{id:27,cat:"자료구조",q:"블룸 필터(Bloom Filter)란 무엇이고 어떤 상황에서 유용한가요?",
+a:`비트 배열과 여러 해시 함수로 원소 포함 여부를 확률적으로 확인. <strong>False Positive 가능, False Negative 불가</strong>. 삭제 불가. 활용: Redis 캐시 미스 방지, Chrome 악성 URL 필터링. 메모리를 대폭 절약합니다.`,
+links:[{t:"Bloom Filter Visualization",u:"https://llimllib.github.io/bloomfilter-tutorial/"},{t:"GeeksforGeeks Bloom Filter",u:"https://www.geeksforgeeks.org/bloom-filters-introduction-and-python-implementation/"}],
+fqs:[
+{q:"False Positive 확률을 줄이는 방법은?",a:`① <strong>비트 배열 크기 늘리기</strong>: 배열이 클수록 비트 충돌 확률 감소. ② <strong>해시 함수 수 최적화</strong>: 해시 함수 수 k의 최적값은 <code>k = (m/n) × ln2</code> (m=비트 수, n=원소 수). 해시 함수가 너무 많으면 비트가 빨리 채워지고, 너무 적으면 구별력이 떨어집니다. 일반적으로 1% FP율을 위해 원소당 약 10비트가 필요합니다.`},
+{q:"블룸 필터에서 삭제가 안 되는 이유와 이를 해결한 자료구조는?",a:`한 비트 위치가 <strong>여러 원소에 의해 공유</strong>될 수 있으므로, 특정 원소를 삭제하기 위해 비트를 0으로 하면 다른 원소의 비트도 함께 지워집니다. 해결: <strong>Counting Bloom Filter</strong>: 비트 대신 카운터 사용. 삽입 시 +1, 삭제 시 -1. 메모리 사용이 증가합니다. <strong>Cuckoo Filter</strong>: 삭제를 지원하면서도 FP율이 낮고 블룸 필터보다 공간 효율적입니다.`}
+],
+trap:{wrong:`"블룸 필터는 원소가 집합에 없다는 것을 확실히 확인할 수 없다."`,
+explain:`<strong>틀린 이유</strong>: 이것이 블룸 필터의 핵심 장점 중 하나입니다. <strong>False Negative는 발생하지 않습니다</strong>. "없다"(비트가 0)고 판단하면 실제로 없는 것이 확실합니다. 불확실한 것은 "있다"(비트가 1)고 판단했을 때입니다(False Positive 가능). 이 특성으로 "없음이 확실한 경우 빠르게 거르기"에 완벽하게 적합합니다.`}
+},
+{id:28,cat:"자료구조",q:"LRU 캐시를 O(1)로 구현하는 방법을 설명하세요.",
+a:`<strong>HashMap + 이중 연결 리스트</strong> 조합. HashMap으로 키→노드 O(1) 접근. 이중 연결 리스트로 사용 순서 유지 및 O(1) 삽입/삭제. get: 노드 찾아 맨 앞으로 이동. put: 존재하면 업데이트+이동, 없으면 앞에 삽입하고 초과시 맨 뒤 삭제.`,
+links:[{t:"LeetCode LRU Cache",u:"https://leetcode.com/problems/lru-cache/"},{t:"Redis Eviction Policy",u:"https://redis.io/docs/manual/eviction/"}],
+fqs:[
+{q:"이중 연결 리스트에서 더미 헤드/테일 노드를 사용하는 이유는?",a:`더미(sentinel) 노드 없이 구현하면 빈 리스트, 리스트의 첫 번째 또는 마지막 노드를 추가/삭제할 때 <strong>null 체크가 많아지고</strong> 엣지 케이스가 복잡해집니다. 더미 head와 tail을 두면 실제 노드들은 항상 두 더미 사이에 위치하므로 null 체크 없이 일관된 로직으로 처리할 수 있습니다. 코드가 간결하고 버그가 줄어듭니다.`},
+{q:"LRU의 변형인 LFU(Least Frequently Used)를 O(1)로 구현하는 방법은?",a:`HashMap<key, (value, freq)> + HashMap<freq, LinkedHashSet<key>> + minFreq 변수를 조합합니다. freq별로 LinkedHashSet(순서 있는 집합)을 관리합니다. get: 키의 freq를 증가, freq별 셋에서 이동, minFreq 갱신. put: 새 키면 freq=1로 삽입, minFreq=1로 설정. 초과시 minFreq에 해당하는 셋에서 가장 오래된 키 제거. 모든 연산 <code>O(1)</code>.`}
+],
+trap:{wrong:`"LRU 캐시는 해시맵만으로 O(1)에 구현할 수 있다. 접근 시간 추적을 타임스탬프로 저장하면 된다."`,
+explain:`<strong>틀린 이유</strong>: 해시맵 + 타임스탬프로 get/put은 O(1)이지만, <strong>가장 오래된 항목 제거(eviction)가 O(n)</strong>이 됩니다. 모든 항목의 타임스탬프를 비교해야 하기 때문입니다. 이중 연결 리스트는 항목을 순서대로 유지하여 가장 오래된 항목이 항상 tail에 있어 O(1)에 제거할 수 있습니다. O(1) 보장을 위해 연결 리스트가 필수입니다.`}
+},
+{id:29,cat:"데이터베이스",q:"RDBMS와 NoSQL의 차이점과 선택 기준을 설명하세요.",
+a:`<strong>RDBMS</strong>: 스키마 고정, ACID 보장, SQL, 수직 확장. 데이터 무결성과 복잡한 조인이 필요할 때(금융, ERP). <strong>NoSQL</strong>: 스키마 유연, 수평 확장 용이, BASE 모델. Document/Key-Value/Column/Graph 등. 빠른 개발, 대용량 비정형 데이터에 적합.`,
+links:[{t:"RDBMS vs NoSQL",u:"https://www.ibm.com/think/topics/sql-vs-nosql"},{t:"CAP Theorem",u:"https://www.ibm.com/topics/cap-theorem"}],
+fqs:[
+{q:"BASE 모델이란 무엇이고 ACID와 어떻게 다른가요?",a:`<strong>BA</strong>sically Available: 항상 응답은 하지만 일부 데이터가 오래됐을 수 있음. <strong>S</strong>oft state: 외부 입력 없이도 시스템 상태가 변할 수 있음(동기화 과정). <strong>E</strong>ventually consistent: 모든 복제본이 결국엔 동일해짐. ACID가 강한 일관성을 보장하는 대신 가용성/성능을 희생하는 반면, BASE는 강한 일관성을 포기하고 가용성과 확장성을 얻습니다.`},
+{q:"NewSQL은 무엇이고 어떤 문제를 해결하나요?",a:`RDBMS의 ACID + NoSQL의 수평 확장성을 함께 제공하려는 시스템입니다. 예: Google Spanner, CockroachDB, TiDB, VoltDB. 분산 트랜잭션을 지원하면서도 수평 확장이 가능합니다. Google Spanner는 TrueTime API를 이용해 전 세계 분산 환경에서 외부 일관성(External Consistency)을 보장합니다. 완전 해결책은 아니며 CAP 정리의 제약은 여전히 존재합니다.`}
+],
+trap:{wrong:`"NoSQL은 SQL을 전혀 사용하지 않는다."`,
+explain:`<strong>틀린 이유</strong>: NoSQL은 "Not Only SQL"의 약자로, SQL을 사용하지 않는 것이 아니라 전통적 RDBMS와 다른 데이터 모델을 사용한다는 의미입니다. 실제로 <strong>많은 NoSQL 시스템이 SQL 또는 SQL 유사 언어를 지원</strong>합니다. Apache Cassandra의 CQL, Amazon DynamoDB PartiQL, MongoDB의 Aggregation Pipeline 등이 있습니다.`}
+},
+{id:30,cat:"데이터베이스",q:"트랜잭션의 ACID 속성을 설명하세요.",
+a:`<strong>Atomicity(원자성)</strong>: All or Nothing. <strong>Consistency(일관성)</strong>: 트랜잭션 전후 DB 무결성 유지. <strong>Isolation(격리성)</strong>: 동시 트랜잭션들이 서로 간섭하지 않음. <strong>Durability(지속성)</strong>: 커밋된 트랜잭션은 장애 후에도 보존. WAL(Write-Ahead Logging), 잠금, MVCC로 구현.`,
+links:[{t:"ACID Properties",u:"https://www.geeksforgeeks.org/acid-properties-in-dbms/"},{t:"PostgreSQL 트랜잭션",u:"https://www.postgresql.org/docs/current/tutorial-transactions.html"}],
+fqs:[
+{q:"Atomicity를 구현하는 기술인 WAL(Write-Ahead Logging)을 설명하세요.",a:`<strong>WAL(Redo Log)</strong>: 실제 데이터를 디스크에 쓰기 전에 <strong>로그를 먼저 기록</strong>합니다. 장애 시 로그를 재생(Replay)해 커밋된 트랜잭션을 복구하고, 미완료 트랜잭션은 롤백합니다. <strong>Undo Log</strong>: 트랜잭션 롤백 시 이전 상태로 되돌리기 위한 로그. PostgreSQL은 WAL, MySQL InnoDB는 Redo Log + Undo Log를 사용합니다.`},
+{q:"'Consistency'가 애플리케이션 레벨에서도 보장되어야 하는 이유는?",a:`DB의 Consistency는 <strong>무결성 제약조건(PK, FK, NOT NULL, UNIQUE)</strong>을 유지하는 것입니다. 하지만 비즈니스 규칙(예: "계좌 잔액이 음수가 되면 안 된다")은 DB가 자동으로 강제할 수 없습니다. 트랜잭션 내 로직이 잘못 설계되면 DB 제약은 만족하지만 비즈니스적으로 불일치한 상태가 될 수 있습니다. Consistency의 완전한 보장은 DB와 애플리케이션이 함께 담당합니다.`}
+],
+trap:{wrong:`"ACID에서 Isolation은 모든 트랜잭션이 완전히 격리되어 동시에 실행 중인 트랜잭션의 결과를 절대 볼 수 없음을 의미한다."`,
+explain:`<strong>틀린 이유</strong>: Isolation은 격리 수준(Isolation Level)에 따라 다릅니다. SERIALIZABLE만이 완전한 격리를 보장합니다. READ COMMITTED, REPEATABLE READ 등 더 낮은 격리 수준은 성능을 위해 일부 동시성 문제(Dirty Read, Phantom Read 등)를 허용합니다. 실제 대부분의 DB는 성능을 위해 SERIALIZABLE이 아닌 낮은 격리 수준을 기본값으로 사용합니다.`}
+},
+{id:31,cat:"데이터베이스",q:"인덱스(Index)의 원리와 장단점을 설명하세요.",
+a:`인덱스는 검색 속도를 높이기 위한 별도 자료구조(B+Tree 또는 Hash). SELECT를 <code>O(n)</code>→<code>O(log n)</code>으로 개선. <strong>단점</strong>: 추가 저장 공간, INSERT/UPDATE/DELETE 시 인덱스 갱신으로 쓰기 성능 저하. 카디널리티 높은 컬럼, WHERE/JOIN/ORDER BY에 인덱스를 생성합니다.`,
+links:[{t:"Use The Index, Luke!",u:"https://use-the-index-luke.com/"},{t:"MySQL Index Guide",u:"https://dev.mysql.com/doc/refman/8.0/en/optimization-indexes.html"}],
+fqs:[
+{q:"카디널리티(Cardinality)가 낮은 컬럼(예: 성별)에 인덱스를 만들면 안 되는 이유는?",a:`인덱스를 사용해 행을 찾아도 결국 전체 테이블의 50%를 읽어야 합니다. MySQL 옵티마이저는 이 경우 인덱스를 사용하지 않고 <strong>풀 테이블 스캔이 더 효율적</strong>이라고 판단합니다. 인덱스 사용 후 대량의 랜덤 I/O가 발생하면 순차 스캔보다 느릴 수 있습니다. 선택도(Selectivity) = 유니크한 값 수 / 전체 행 수가 높을수록 인덱스가 유효합니다.`},
+{q:"복합 인덱스(Composite Index)에서 컬럼 순서가 중요한 이유를 설명하세요.",a:`복합 인덱스 (A, B, C)는 A로 정렬, A가 같으면 B로 정렬, B가 같으면 C로 정렬됩니다. <strong>왼쪽부터 사용 원칙(Leftmost Prefix Rule)</strong>: WHERE A=? → 인덱스 사용. WHERE A=? AND B=? → 사용. WHERE B=? → A 없이는 인덱스 사용 불가. 자주 사용하는 조건 컬럼을 앞에, 카디널리티가 높은 컬럼을 앞에 배치하는 것이 일반적 전략입니다.`}
+],
+trap:{wrong:`"인덱스가 많을수록 SELECT 성능이 좋아지므로 가능한 많은 컬럼에 인덱스를 만드는 것이 좋다."`,
+explain:`<strong>틀린 이유</strong>: 인덱스 남발은 INSERT/UPDATE/DELETE 성능을 크게 저하시킵니다. 모든 쓰기 작업마다 모든 인덱스를 업데이트해야 합니다. 또한 저장 공간이 증가하고, 너무 많은 인덱스는 옵티마이저가 최적 인덱스를 선택하기 어렵게 합니다. 읽기/쓰기 비율과 실제 쿼리 패턴을 분석해 필요한 인덱스만 선택적으로 생성해야 합니다.`}
+},
+{id:32,cat:"데이터베이스",q:"정규화의 목적과 1NF, 2NF, 3NF를 설명하세요.",
+a:`중복 제거, 갱신 이상(Update Anomaly) 방지. <strong>1NF</strong>: 모든 컬럼 원자값(반복 그룹 제거). <strong>2NF</strong>: 1NF + 부분 함수 종속 제거. <strong>3NF</strong>: 2NF + 이행 함수 종속 제거. BCNF는 3NF보다 엄격.`,
+links:[{t:"Database Normalization",u:"https://www.geeksforgeeks.org/normal-forms-in-dbms/"},{t:"Normalization Guide",u:"https://www.studytonight.com/dbms/database-normalization.php"}],
+fqs:[
+{q:"비정규화(Denormalization)를 의도적으로 선택하는 경우는 언제인가요?",a:`읽기 성능이 극도로 중요할 때 선택합니다. 정규화된 테이블의 복잡한 JOIN은 성능을 저하시킵니다. 예: 쿼리마다 5개 테이블을 JOIN해야 한다면, 자주 조회하는 데이터를 미리 합친 테이블을 만들 수 있습니다. <strong>단점</strong>: 데이터 중복, 갱신 이상 발생 가능. 일반적으로 <strong>OLAP(분석)</strong>용 데이터 웨어하우스에서는 비정규화를, <strong>OLTP(트랜잭션)</strong>용 운영 DB에서는 정규화를 선택합니다.`},
+{q:"이행 함수 종속(Transitive Dependency)의 예를 들어 설명하세요.",a:`학생(학번, 학과코드, 학과명) 테이블에서: 학번 → 학과코드 → 학과명. 이때 학과명은 기본키(학번)에 직접 종속되는 게 아니라 학과코드를 통해 간접 종속(이행 종속)됩니다. <strong>문제</strong>: 학과명이 바뀌면 해당 학과의 모든 행을 수정해야 합니다(갱신 이상). <strong>3NF 적용</strong>: 학생(학번, 학과코드), 학과(학과코드, 학과명)으로 분리.`}
+],
+trap:{wrong:`"정규화는 항상 더 좋은 데이터베이스 설계를 의미한다. 모든 테이블은 3NF 이상을 만족해야 한다."`,
+explain:`<strong>맥락에 따라 다릅니다</strong>: 정규화가 항상 최선은 아닙니다. 과도한 정규화는 단순 조회에도 많은 JOIN이 필요해 성능이 저하될 수 있습니다. 실무에서는 대부분 3NF까지 정규화한 뒤, 성능 문제가 발생하는 부분에 한해 의도적으로 비정규화를 적용합니다. 정규화 여부는 <strong>시스템의 읽기/쓰기 패턴, 데이터 크기, 성능 요구사항</strong>에 따라 결정해야 합니다.`}
+},
+{id:33,cat:"데이터베이스",q:"SQL Join의 종류(INNER, LEFT, RIGHT, FULL OUTER)를 설명하세요.",
+a:`<strong>INNER JOIN</strong>: 양쪽 모두 매칭. <strong>LEFT JOIN</strong>: 왼쪽 전체 + 오른쪽 매칭(없으면 NULL). <strong>RIGHT JOIN</strong>: 오른쪽 전체 + 왼쪽 매칭. <strong>FULL OUTER JOIN</strong>: 양쪽 모두(NULL 포함). <strong>CROSS JOIN</strong>: 카르테시안 곱. MySQL은 FULL OUTER JOIN 미지원 → LEFT+RIGHT JOIN UNION으로 대체.`,
+links:[{t:"SQL Join Visualizer",u:"https://joins.spathon.com/"},{t:"W3Schools SQL Joins",u:"https://www.w3schools.com/sql/sql_join.asp"}],
+fqs:[
+{q:"쿼리 옵티마이저가 JOIN 순서를 결정하는 기준은 무엇인가요?",a:`옵티마이저는 여러 전략을 평가합니다: ① <strong>행 수</strong>: 작은 테이블을 먼저(Nested Loop Join 기준). ② <strong>인덱스 존재 여부</strong>: JOIN 컬럼에 인덱스가 있으면 활용. ③ <strong>조인 방법</strong>: Nested Loop(작은 데이터), Hash Join(대용량 데이터), Merge Join(정렬된 데이터). EXPLAIN으로 옵티마이저 계획 확인, 힌트(STRAIGHT_JOIN)로 강제 가능. 통계 정보(테이블 행 수, 카디널리티)가 올바르게 수집되어야 옵티마이저가 정확합니다.`},
+{q:"Self Join이 필요한 실제 사례를 설명하세요.",a:`같은 테이블 내에 계층 구조가 있을 때 사용합니다. 직원 테이블(id, name, manager_id)에서 각 직원과 그 상사 이름을 함께 조회: <code>SELECT e.name, m.name FROM employees e JOIN employees m ON e.manager_id = m.id</code>. 또한 같은 테이블에서 특정 조건의 쌍을 찾을 때: 같은 도시에 사는 두 고객 쌍 찾기.`}
+],
+trap:{wrong:`"LEFT JOIN은 항상 INNER JOIN보다 느리다. 더 많은 행을 반환하기 때문이다."`,
+explain:`<strong>항상 그렇지는 않습니다</strong>: 성능은 인덱스, 데이터 분포, 쿼리 패턴에 더 크게 의존합니다. LEFT JOIN이 더 많은 행을 반환할 수 있지만, 오른쪽 테이블에서 매칭되지 않는 경우를 early exit할 수 있어 INNER JOIN보다 빠른 경우도 있습니다. 실제 성능은 EXPLAIN으로 확인해야 합니다. 단순히 JOIN 종류만으로 성능을 단정짓는 것은 부정확합니다.`}
+},
+{id:34,cat:"데이터베이스",q:"트랜잭션 격리 수준(Isolation Level)의 종류와 발생 가능한 문제를 설명하세요.",
+a:`<strong>READ UNCOMMITTED</strong>: Dirty Read 발생. <strong>READ COMMITTED</strong>: Dirty Read 방지(Oracle 기본). <strong>REPEATABLE READ</strong>: Non-Repeatable Read 방지(MySQL 기본 - MVCC로 Phantom Read도 방지). <strong>SERIALIZABLE</strong>: 모든 문제 방지, 가장 느림. 높을수록 동시성 감소.`,
+links:[{t:"Transaction Isolation",u:"https://www.postgresql.org/docs/current/transaction-iso.html"},{t:"MySQL InnoDB Isolation",u:"https://dev.mysql.com/doc/refman/8.0/en/innodb-transaction-isolation-levels.html"}],
+fqs:[
+{q:"Phantom Read와 Non-Repeatable Read의 차이를 예시로 설명하세요.",a:`<strong>Non-Repeatable Read</strong>: 같은 트랜잭션에서 같은 행을 두 번 읽었는데 값이 다름. 트랜잭션 A가 읽는 중에 B가 수정(UPDATE/DELETE)한 경우. <strong>Phantom Read</strong>: 같은 조건으로 두 번 조회했는데 행의 수가 다름. 트랜잭션 A가 조회하는 중에 B가 INSERT한 경우. REPEATABLE READ는 읽은 행의 변경은 막지만 새로운 행 삽입은 막지 못합니다(MySQL InnoDB는 Gap Lock으로 예외적으로 막음).`},
+{q:"MySQL InnoDB가 REPEATABLE READ에서도 Phantom Read를 방지하는 방법은?",a:`두 가지 메커니즘을 사용합니다. ① <strong>MVCC(Consistent Snapshot Read)</strong>: 일반 SELECT는 트랜잭션 시작 시점의 스냅샷을 읽어 다른 트랜잭션의 INSERT를 보지 않습니다. ② <strong>Gap Lock</strong>: SELECT FOR UPDATE 또는 locking read 시 검색 범위에 Gap Lock을 걸어 다른 트랜잭션의 INSERT를 막습니다. 이 두 메커니즘으로 REPEATABLE READ에서도 Phantom Read를 방지합니다.`}
+],
+trap:{wrong:`"격리 수준이 높을수록 항상 더 안전하므로 SERIALIZABLE을 기본값으로 사용해야 한다."`,
+explain:`<strong>틀린 이유</strong>: SERIALIZABLE은 트랜잭션들이 순서대로 실행되는 것처럼 처리하여 동시 처리량이 크게 감소하고 데드락 발생 가능성이 높아집니다. 대부분의 애플리케이션에서 Phantom Read나 Non-Repeatable Read가 실제 문제를 일으키지 않는 경우가 많습니다. <strong>성능과 안전성의 트레이드오프</strong>를 고려해 비즈니스 요구에 맞는 격리 수준을 선택해야 합니다.`}
+},
+{id:35,cat:"데이터베이스",q:"N+1 문제란 무엇이고 어떻게 해결하나요?",
+a:`N번 조회로 N개 레코드를 가져온 후, 각 레코드마다 추가 쿼리를 N번 실행하는 현상. <strong>해결</strong>: JOIN으로 한 번에 조회, ORM의 Eager Loading, Batch fetching, DataLoader(GraphQL). ORM 사용 시 발생하기 쉽습니다.`,
+links:[{t:"N+1 Problem",u:"https://www.geeksforgeeks.org/n1-query-problem-in-orm/"},{t:"JPA N+1 해결",u:"https://jojoldu.tistory.com/165"}],
+fqs:[
+{q:"JPA에서 N+1 문제가 발생하는 상황과 @EntityGraph로 해결하는 방법은?",a:`<code>@ManyToOne(fetch = LAZY)</code>로 설정된 연관 관계에서 컬렉션을 반복 접근할 때 발생합니다. 예: 게시글 100개 조회 후 <code>post.getAuthor().getName()</code> 호출 → 100번의 추가 쿼리. 해결: ① <code>@EntityGraph(attributePaths = "author")</code>로 Fetch Join. ② JPQL <code>JOIN FETCH</code>. ③ Batch Size 설정. 단, Fetch Join + Collection은 Cartesian Product 발생 주의.`},
+{q:"GraphQL에서 N+1 문제를 해결하는 DataLoader 패턴을 설명하세요.",a:`DataLoader는 <strong>배치(Batch) + 캐싱</strong>으로 N+1을 해결합니다. 개별 요청들을 모아서(배치) 한 번에 처리합니다. 예: 게시글 100개의 author를 조회할 때 각각 요청하지 않고, author id 100개를 모아 <code>SELECT * FROM users WHERE id IN (1,2,...,100)</code> 한 번으로 처리합니다. Facebook이 개발하여 오픈소스로 공개했습니다.`}
+],
+trap:{wrong:`"N+1 문제는 항상 ORM을 사용할 때만 발생한다."`,
+explain:`<strong>틀린 이유</strong>: N+1 문제는 ORM에서 더 은밀하게 발생하지만, <strong>직접 SQL을 작성할 때도 발생</strong>합니다. 예: 애플리케이션 코드에서 루프 안에 쿼리를 호출하면 동일한 문제가 생깁니다. ORM이 문제를 숨길 뿐이며, 근본 원인은 "필요한 데이터를 한 번에 요청하지 않는 것"입니다.`}
+},
+{id:36,cat:"데이터베이스",q:"샤딩(Sharding)과 파티셔닝(Partitioning)의 차이를 설명하세요.",
+a:`<strong>파티셔닝</strong>: 하나의 DB 서버 내 테이블 물리적 분할(수평/수직). <strong>샤딩</strong>: 여러 DB 서버에 데이터 분산(수평 파티셔닝). 샤드 키 선택 중요, 크로스 샤드 쿼리/트랜잭션 복잡. 특정 샤드 집중(Hot Spot) 문제 주의.`,
+links:[{t:"Database Sharding",u:"https://aws.amazon.com/blogs/database/sharding-with-amazon-relational-database-service/"},{t:"MongoDB Sharding",u:"https://www.mongodb.com/docs/manual/sharding/"}],
+fqs:[
+{q:"샤드 키(Shard Key) 선택 시 고려해야 할 요소는 무엇인가요?",a:`① <strong>카디널리티</strong>: 값이 다양해야 고르게 분산됩니다. ② <strong>쓰기 분산</strong>: 특정 샤드에 쓰기가 집중되면 안 됩니다(시간 기반 샤드 키의 문제). ③ <strong>쿼리 패턴</strong>: 자주 같이 조회되는 데이터는 같은 샤드에 있어야 크로스 샤드 쿼리를 줄입니다. ④ <strong>불변성</strong>: 샤드 키 값이 변경되면 데이터를 다른 샤드로 이동해야 합니다. 좋은 예: 사용자 ID. 나쁜 예: 날짜(최신 날짜에 쓰기 집중).`},
+{q:"샤딩 환경에서 분산 트랜잭션(Distributed Transaction)이 어려운 이유는?",a:`여러 샤드에 걸친 트랜잭션은 <strong>2PC(Two-Phase Commit)</strong>가 필요합니다. 1단계: 모든 참여 노드가 준비됨(Prepare). 2단계: 코디네이터가 모두 커밋 또는 모두 롤백. 문제: 코디네이터 장애 시 참여 노드들이 블로킹. 네트워크 지연으로 성능 저하. CAP 정리상 분산 환경에서 강한 일관성 보장이 어렵습니다. 실무에서는 사가(Saga) 패턴으로 분산 트랜잭션을 대체하는 경우가 많습니다.`}
+],
+trap:{wrong:`"샤딩을 적용하면 데이터베이스 성능 문제가 모두 해결된다."`,
+explain:`<strong>틀린 이유</strong>: 샤딩은 <strong>수평 확장을 위한 기법</strong>이지 만능 해결책이 아닙니다. 크로스 샤드 쿼리는 오히려 성능이 저하될 수 있습니다. 복잡한 조인, 집계 쿼리, 분산 트랜잭션은 샤딩 후 더 어려워집니다. 샤딩 전에 인덱스 최적화, 쿼리 튜닝, 리플리케이션, 캐싱 등을 먼저 시도하는 것이 바람직합니다.`}
+},
+{id:37,cat:"데이터베이스",q:"EXPLAIN을 이용한 쿼리 실행 계획 분석 방법을 설명하세요.",
+a:`주요 컬럼: <strong>type</strong>(ALL이 최악, const/eq_ref가 최적), <strong>key</strong>(사용된 인덱스), <strong>rows</strong>(예상 검색 행 수), <strong>Extra</strong>(Using filesort, Using temporary는 성능 문제 징후). EXPLAIN ANALYZE는 실제 실행 통계 제공. 풀 테이블 스캔(type=ALL)이 나타나면 인덱스 추가 검토.`,
+links:[{t:"MySQL EXPLAIN Guide",u:"https://dev.mysql.com/doc/refman/8.0/en/execution-plan-information.html"},{t:"EXPLAIN Visualizer",u:"https://explain.depesz.com/"}],
+fqs:[
+{q:"EXPLAIN의 type 컬럼에서 ALL, range, ref, eq_ref, const의 차이를 설명하세요.",a:`성능 순서: <strong>const</strong> (기본키/유니크 키로 상수 1개 조회) > <strong>eq_ref</strong> (JOIN에서 기본키로 단 1개) > <strong>ref</strong> (인덱스로 여러 행 조회) > <strong>range</strong> (인덱스 범위 스캔) > <strong>index</strong> (인덱스 전체 스캔) > <strong>ALL</strong> (풀 테이블 스캔). range 이상이면 양호, ref 이상이면 좋음, const/eq_ref가 이상적입니다.`},
+{q:"'Using filesort'가 Extra에 표시될 때 어떻게 최적화하나요?",a:`ORDER BY 컬럼에 인덱스가 없거나 인덱스를 사용할 수 없을 때 메모리에서 정렬(filesort)이 발생합니다. <strong>최적화</strong>: ORDER BY 컬럼에 인덱스 추가, 단 WHERE 조건과 ORDER BY 컬럼을 함께 포함하는 복합 인덱스가 효율적. <code>sort_buffer_size</code>를 늘려 메모리 내 정렬 가능하게 설정. <code>covering index</code>를 활용하면 filesort를 인덱스 순회로 대체할 수 있습니다.`}
+],
+trap:{wrong:`"EXPLAIN에서 rows 값이 작으면 쿼리가 빠르다."`,
+explain:`<strong>항상 그렇지 않습니다</strong>: rows는 <strong>옵티마이저의 추정값</strong>이며 실제와 다를 수 있습니다. 통계가 오래되었으면 크게 틀릴 수 있습니다. 또한 rows가 적어도 type이 ALL이면 문제입니다. 반대로 rows가 크더라도 covering index를 사용하면 매우 빠를 수 있습니다. EXPLAIN ANALYZE(실제 실행 결과)와 함께 보는 것이 정확합니다.`}
+},
+{id:38,cat:"데이터베이스",q:"Redis 캐시 전략(Cache-Aside, Write-Through 등)을 설명하세요.",
+a:`<strong>Cache-Aside(Lazy Loading)</strong>: 캐시 미스 시 DB 조회 후 캐시 저장. <strong>Write-Through</strong>: 쓰기 시 캐시와 DB 동시 업데이트. <strong>Write-Back</strong>: 캐시만 쓰고 비동기로 DB 반영(빠르지만 손실 위험). <strong>Read-Through</strong>: 캐시가 DB 조회 담당. TTL 설정과 캐시 스탬피드 방지도 중요.`,
+links:[{t:"AWS Caching Strategies",u:"https://aws.amazon.com/caching/best-practices/"},{t:"Redis Caching",u:"https://redis.io/topics/introduction"}],
+fqs:[
+{q:"캐시 스탬피드(Cache Stampede)란 무엇이고 어떻게 방지하나요?",a:`캐시가 만료되는 순간 다수의 요청이 동시에 DB로 몰리는 현상입니다(Thundering Herd). <strong>방지 방법</strong>: ① <strong>Mutex Lock</strong>: 첫 번째 요청만 DB에 접근, 나머지는 대기. ② <strong>Early Expiration</strong>: 만료 전에 백그라운드에서 미리 갱신. ③ <strong>Probabilistic Early Recomputation</strong>: 만료가 가까울수록 확률적으로 미리 갱신(XFetch 알고리즘). ④ <strong>TTL에 랜덤 지터 추가</strong>: 동시 만료를 분산.`},
+{q:"Redis의 키 만료(TTL) 정책과 메모리 부족 시 Eviction 정책을 설명하세요.",a:`<strong>키 만료 방식</strong>: Lazy Expiration(접근 시 만료 확인) + Active Expiration(주기적으로 샘플링하여 만료 키 삭제). <strong>Eviction 정책</strong>: <code>noeviction</code>(메모리 초과 시 에러), <code>allkeys-lru</code>(LRU 기준 모든 키), <code>volatile-lru</code>(TTL 있는 키만 LRU), <code>allkeys-random</code>(무작위). 캐시 서버로 사용할 때는 <code>allkeys-lru</code>나 <code>allkeys-lfu</code>가 일반적으로 권장됩니다.`}
+],
+trap:{wrong:`"Write-Through 전략은 항상 Cache-Aside보다 캐시 일관성이 좋으므로 Write-Through를 기본으로 사용해야 한다."`,
+explain:`<strong>트레이드오프가 있습니다</strong>: Write-Through는 캐시-DB 일관성이 좋지만, <strong>쓰기 지연이 증가</strong>합니다(DB와 캐시 모두 써야 하므로). 또한 한 번도 읽히지 않을 데이터도 캐시에 저장되어 공간 낭비가 발생합니다. Cache-Aside는 실제로 읽히는 데이터만 캐싱하는 장점이 있습니다. 읽기 패턴과 쓰기 빈도에 따라 전략을 선택해야 합니다.`}
+},
+{id:39,cat:"데이터베이스",q:"데드락(Deadlock)이 무엇이고 데이터베이스에서 어떻게 처리하나요?",
+a:`두 트랜잭션이 서로 점유한 자원을 기다리며 영원히 대기하는 상태. 발생 조건: 상호 배제, 점유와 대기, 비선점, 순환 대기. <strong>예방</strong>: 항상 같은 순서로 잠금 획득, 타임아웃. <strong>감지 및 해소</strong>: DB가 대기 그래프 분석 후 희생 트랜잭션 롤백.`,
+links:[{t:"MySQL Deadlock Handling",u:"https://dev.mysql.com/doc/refman/8.0/en/innodb-deadlocks.html"}],
+fqs:[
+{q:"데드락이 발생할 수 있는 구체적인 SQL 시나리오를 작성하세요.",a:`트랜잭션 A: <code>UPDATE accounts SET balance=balance-100 WHERE id=1; UPDATE accounts SET balance=balance+100 WHERE id=2;</code>. 트랜잭션 B: <code>UPDATE accounts SET balance=balance-50 WHERE id=2; UPDATE accounts SET balance=balance+50 WHERE id=1;</code>. A가 id=1 잠금 획득 후 id=2 대기, B가 id=2 잠금 획득 후 id=1 대기 → 데드락. <strong>해결</strong>: 항상 id 오름차순으로 잠금 획득.`},
+{q:"MySQL InnoDB가 데드락을 자동으로 감지하고 처리하는 방법은?",a:`InnoDB는 <strong>대기 그래프(Wait-for Graph)</strong>를 유지합니다. 트랜잭션이 잠금을 기다릴 때마다 그래프를 업데이트합니다. 사이클이 감지되면 데드락으로 판단하고, 가장 <strong>적은 행을 수정한 트랜잭션을 희생자(Victim)</strong>로 선택해 롤백합니다. 애플리케이션은 <code>Error 1213: Deadlock found</code>를 받으면 트랜잭션을 재시도해야 합니다.`}
+],
+trap:{wrong:`"데드락을 완전히 방지하는 유일한 방법은 트랜잭션을 사용하지 않는 것이다."`,
+explain:`<strong>틀린 이유</strong>: 데드락은 <strong>예방, 회피, 감지/해소</strong> 세 가지 방법으로 관리 가능합니다. 잠금 획득 순서를 일관되게 유지하거나, 타임아웃을 설정하거나, DB의 자동 감지 메커니즘을 활용하면 됩니다. 트랜잭션 없이는 ACID를 보장할 수 없어 데이터 무결성이 훼손됩니다. 데드락을 두려워해 트랜잭션을 제거하는 것은 더 큰 문제를 만들 수 있습니다.`}
+},
+{id:40,cat:"데이터베이스",q:"복제(Replication)와 고가용성(HA) 아키텍처를 설명하세요.",
+a:`<strong>Primary-Replica 복제</strong>: 쓰기는 Primary, 읽기는 Replica로 분산. <strong>비동기 복제</strong>: 빠르지만 데이터 손실 위험. <strong>동기 복제</strong>: 안전하지만 느림. <strong>HA</strong>: Heartbeat + 자동 페일오버로 Primary 장애 시 Replica가 승격됩니다.`,
+links:[{t:"MySQL Replication",u:"https://dev.mysql.com/doc/refman/8.0/en/replication.html"},{t:"PostgreSQL HA Guide",u:"https://www.postgresql.org/docs/current/high-availability.html"}],
+fqs:[
+{q:"복제 지연(Replication Lag)이 발생하는 원인과 영향을 설명하세요.",a:`<strong>원인</strong>: 비동기 복제에서 Primary의 쓰기가 Replica에 반영되는 데 시간이 걸림. 대량 쓰기, 느린 네트워크, Replica 과부하가 원인. <strong>영향</strong>: Replica를 읽으면 최신 데이터가 아닐 수 있음(Stale Read). 쓰기 후 즉시 같은 데이터를 읽으면 Write-After-Read 불일치. <strong>해결</strong>: 중요한 읽기는 Primary에서, 세션 일관성(Session Consistency) 적용, 복제 지연 모니터링.`},
+{q:"MySQL Group Replication과 일반 Primary-Replica의 차이는?",a:`<strong>일반 복제</strong>: 단방향, 수동 페일오버, 비동기. <strong>Group Replication</strong>: 다중 Primary 또는 Single Primary, 자동 페일오버, Paxos 기반 합의로 충돌 감지. 모든 Primary에 쓰기 가능하면서 일관성을 보장합니다. 단, 쓰기 충돌 시 일부 트랜잭션이 롤백됩니다. MySQL InnoDB Cluster가 Group Replication 기반입니다.`}
+],
+trap:{wrong:`"Primary-Replica 구조에서 Replica는 읽기 전용이어서 Primary 장애 시 서비스가 중단된다."`,
+explain:`<strong>틀린 이유</strong>: <strong>자동 페일오버(Failover)</strong> 메커니즘이 구성되어 있으면 Primary 장애 시 Replica가 자동으로 Primary로 승격됩니다. Orchestrator, MHA, AWS RDS Multi-AZ 등이 이를 자동화합니다. 페일오버 시 짧은 다운타임이 발생할 수 있지만(수 초~수십 초) 서비스가 완전히 중단되지는 않습니다.`}
+},
+{id:41,cat:"데이터베이스",q:"SQL에서 GROUP BY와 HAVING의 차이를 설명하세요.",
+a:`<strong>GROUP BY</strong>: 지정 컬럼이 같은 행들을 그룹화. <strong>HAVING</strong>: 그룹화된 결과에 조건 적용. 실행 순서: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY. WHERE는 그룹화 전, HAVING은 그룹화 후 필터링.`,
+links:[{t:"SQL Execution Order",u:"https://www.geeksforgeeks.org/sql-query-processing-order/"},{t:"W3Schools HAVING",u:"https://www.w3schools.com/sql/sql_having.asp"}],
+fqs:[
+{q:"SQL 실행 순서가 성능 최적화에 어떻게 영향을 미치나요?",a:`<strong>WHERE vs HAVING</strong>: WHERE는 GROUP BY 전에 실행되어 그룹화할 행 수를 줄입니다. HAVING은 그룹화 후 처리. 가능하면 HAVING 조건을 WHERE로 옮기는 것이 효율적(집계 함수 조건은 불가). <strong>JOIN 순서</strong>: 옵티마이저가 실행 순서를 조정하지만, WHERE 조건이 인덱스를 잘 활용할 수 있도록 설계가 중요. <strong>LIMIT</strong>은 ORDER BY 후 마지막에 적용됩니다.`},
+{q:"윈도우 함수(Window Function)가 GROUP BY와 다른 점은 무엇인가요?",a:`<strong>GROUP BY</strong>: 그룹당 하나의 행으로 압축. <strong>윈도우 함수</strong>: 행 수를 유지하면서 각 행에 대해 집계 계산. 예: <code>SELECT name, salary, AVG(salary) OVER (PARTITION BY dept) FROM employees</code>. 각 직원의 행을 유지하면서 부서 평균을 함께 표시. ROW_NUMBER, RANK, LAG, LEAD 등 강력한 분석 함수를 제공합니다.`}
+],
+trap:{wrong:`"HAVING과 WHERE는 동일한 기능을 한다. HAVING이 더 유연하므로 WHERE 대신 항상 HAVING을 사용해도 된다."`,
+explain:`<strong>틀린 이유</strong>: HAVING을 WHERE 대신 사용하면 <strong>성능이 크게 저하</strong>됩니다. WHERE는 GROUP BY 이전에 행을 필터링하여 그룹화할 데이터를 줄이지만, HAVING은 모든 행을 그룹화한 후 필터링합니다. 또한 WHERE는 인덱스를 활용할 수 있지만 HAVING은 집계 후 결과에 조건을 적용합니다. 집계 함수 조건만 HAVING으로 작성해야 합니다.`}
+},
+{id:42,cat:"데이터베이스",q:"MVCC(Multi-Version Concurrency Control)란 무엇인가요?",
+a:`데이터의 여러 버전을 유지하여 읽기와 쓰기가 서로 차단하지 않는 동시성 제어 기법. 읽기 시 트랜잭션 시작 시점의 스냅샷 사용. PostgreSQL은 힙에 이전 버전 유지, MySQL InnoDB는 Undo 로그에 저장. 읽기가 잠금 없이 가능해 동시성 향상.`,
+links:[{t:"PostgreSQL MVCC",u:"https://www.postgresql.org/docs/current/mvcc.html"},{t:"MySQL InnoDB MVCC",u:"https://dev.mysql.com/doc/refman/8.0/en/innodb-multi-versioning.html"}],
+fqs:[
+{q:"PostgreSQL에서 VACUUM이 필요한 이유를 MVCC와 연결해서 설명하세요.",a:`PostgreSQL의 MVCC는 업데이트 시 기존 행을 삭제하지 않고 <strong>새 버전을 추가</strong>합니다(old row + new row 공존). 더 이상 어떤 트랜잭션도 참조하지 않는 오래된 행 버전(Dead Tuples)이 디스크 공간을 차지합니다. <strong>VACUUM</strong>은 이 Dead Tuples를 정리하고 공간을 재사용 가능하게 합니다. AUTOVACUUM이 자동으로 실행되지만, 대량 업데이트 후에는 수동 VACUUM ANALYZE가 필요할 수 있습니다.`},
+{q:"MVCC가 데드락을 완전히 방지할 수 없는 이유는?",a:`MVCC는 <strong>읽기-쓰기 충돌</strong>은 해결하지만 <strong>쓰기-쓰기 충돌</strong>은 해결하지 못합니다. 두 트랜잭션이 같은 행을 동시에 수정하려 하면 잠금이 필요합니다. 예: 트랜잭션 A가 행 1을 수정, 트랜잭션 B가 행 2를 수정한 후, A가 행 2를, B가 행 1을 수정하려 하면 데드락이 발생합니다. MVCC는 읽기 성능과 읽기-쓰기 간 블로킹은 해결하지만 쓰기 간 데드락은 여전히 발생합니다.`}
+],
+trap:{wrong:`"MVCC에서는 항상 최신 데이터를 읽는다. 일관성을 위해 읽기는 커밋된 최신 데이터를 반환해야 한다."`,
+explain:`<strong>틀린 이유</strong>: MVCC의 핵심은 <strong>스냅샷 격리(Snapshot Isolation)</strong>입니다. 트랜잭션은 시작 시점의 스냅샷을 보므로, 다른 트랜잭션이 이후에 커밋한 데이터도 보이지 않습니다. 이는 Repeatable Read를 보장하지만 최신 데이터를 읽지 않는다는 의미이기도 합니다. 항상 최신 데이터를 읽으려면 SELECT FOR UPDATE 또는 READ COMMITTED 격리 수준을 사용해야 합니다.`}
+},
+{id:43,cat:"데이터베이스",q:"풀텍스트 검색(Full-Text Search)의 원리와 Elasticsearch의 역할을 설명하세요.",
+a:`역 인덱스(Inverted Index)를 사용해 각 단어가 어떤 문서에 등장하는지 매핑. MySQL FULLTEXT보다 Elasticsearch가 형태소 분석, TF-IDF/BM25 스코어링, 자동완성, 오타 교정에 훨씬 강력. 보통 RDBMS와 병행 사용.`,
+links:[{t:"Elasticsearch Guide",u:"https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html"},{t:"한국어 Nori 분석기",u:"https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-nori.html"}],
+fqs:[
+{q:"역 인덱스(Inverted Index)의 구조와 검색 과정을 설명하세요.",a:`역 인덱스는 <strong>단어 → 문서 목록</strong> 매핑입니다. 예: "database": [doc1, doc3, doc5], "index": [doc1, doc2, doc4]. 문서를 색인할 때 텍스트를 <strong>토크나이징, 정규화(소문자화, 어근 추출)</strong> 후 역 인덱스에 추가. 검색 시 쿼리를 동일하게 처리 후 역 인덱스에서 해당 문서 집합을 찾고, 여러 단어 조합 시 집합 교집합/합집합 연산.`},
+{q:"TF-IDF 스코어링 방식을 설명하세요.",a:`<strong>TF(Term Frequency)</strong>: 문서 내 해당 단어의 출현 빈도. 많을수록 관련도 높음. <strong>IDF(Inverse Document Frequency)</strong>: log(전체 문서 수 / 해당 단어가 있는 문서 수). 희귀한 단어일수록 중요. "the" 같은 흔한 단어는 낮은 IDF, "elasticsearch" 같은 특수 단어는 높은 IDF. 최종 점수 = TF × IDF. Elasticsearch 최신 버전은 TF-IDF 대신 <strong>BM25</strong>를 기본으로 사용합니다.`}
+],
+trap:{wrong:`"Elasticsearch는 데이터베이스를 완전히 대체할 수 있다. 모든 데이터를 Elasticsearch에만 저장하면 된다."`,
+explain:`<strong>틀린 이유</strong>: Elasticsearch는 검색에 최적화되어 있지만 <strong>주 데이터 저장소(Source of Truth)로 적합하지 않습니다</strong>. 트랜잭션 지원이 제한적이고, 강한 일관성 보장이 어려우며, 복잡한 관계 데이터 처리에 취약합니다. 일반적으로 RDBMS에 원본 데이터를 저장하고, 검색 목적으로 Elasticsearch에 동기화하는 이중 쓰기(Dual Write) 또는 CDC(Change Data Capture) 방식을 사용합니다.`}
+},
+{id:44,cat:"네트워크",q:"TCP와 UDP의 차이점과 각각의 사용 사례를 설명하세요.",
+a:`<strong>TCP</strong>: 연결 지향, 3-way handshake, 신뢰성 보장(순서/재전송/흐름제어/혼잡제어), 오버헤드 큼. HTTP, FTP, 이메일. <strong>UDP</strong>: 비연결, 헤더 8바이트, 빠르지만 신뢰성 없음. 실시간 스트리밍, 게임, VoIP, DNS. HTTP/3(QUIC)는 UDP 위에 신뢰성을 구현합니다.`,
+links:[{t:"TCP vs UDP",u:"https://www.cloudflare.com/learning/ddos/glossary/tcp-vs-udp/"},{t:"QUIC Protocol",u:"https://www.chromium.org/quic/"}],
+fqs:[
+{q:"TCP의 흐름 제어(Flow Control)와 혼잡 제어(Congestion Control)의 차이는?",a:`<strong>흐름 제어</strong>: 수신자가 처리할 수 있는 속도에 맞춰 송신자가 전송 속도를 조절. 슬라이딩 윈도우(Sliding Window) 사용. 수신 버퍼 크기를 ACK에 포함하여 알립니다. <strong>혼잡 제어</strong>: 네트워크 자체의 혼잡을 방지. 패킷 손실을 혼잡 신호로 감지하고 전송 속도를 줄입니다. Slow Start, AIMD(Additive Increase Multiplicative Decrease) 알고리즘. 흐름 제어는 수신자-송신자 간, 혼잡 제어는 네트워크 전체를 고려합니다.`},
+{q:"DNS가 TCP가 아닌 UDP를 기본으로 사용하는 이유는?",a:`대부분의 DNS 쿼리/응답은 매우 짧고(512바이트 이하), 빠른 응답이 중요합니다. UDP는 연결 수립 오버헤드(3-way handshake) 없이 즉시 전송 가능합니다. DNS 클라이언트가 응답을 못 받으면 타임아웃 후 재전송하는 방식으로 신뢰성을 보완합니다. 단, DNS 응답이 512바이트 초과(DNSSEC, 대용량 응답) 시 TCP를 사용합니다.`}
+],
+trap:{wrong:`"UDP는 신뢰성이 없으므로 실시간 게임에서 패킷 손실은 항상 문제가 된다."`,
+explain:`<strong>틀린 이유</strong>: 실시간 게임에서 패킷 손실은 오히려 TCP보다 UDP가 더 잘 처리됩니다. TCP는 손실된 패킷을 재전송하는 동안 그 이후 패킷들이 블로킹됩니다(HOL Blocking). 게임에서 오래된 위치 정보는 필요 없습니다. UDP는 손실된 패킷을 그냥 건너뛰고 최신 상태를 계속 전송하여 <strong>낮은 지연시간(Low Latency)</strong>을 유지합니다.`}
+},
+{id:45,cat:"네트워크",q:"HTTP와 HTTPS의 차이점, SSL/TLS 핸드셰이크 과정을 설명하세요.",
+a:`HTTP: 평문 전송. HTTPS: SSL/TLS 암호화. <strong>TLS 1.3 핸드셰이크</strong>: Client Hello → Server Hello + 인증서 → 인증서 검증 → Pre-Master Secret 교환 → 세션 키 생성 → Finished. TLS 1.3은 1-RTT(재연결 시 0-RTT).`,
+links:[{t:"TLS Handshake",u:"https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/"},{t:"How HTTPS Works",u:"https://howhttps.works/"}],
+fqs:[
+{q:"대칭키 암호화와 비대칭키 암호화가 TLS에서 어떻게 함께 사용되나요?",a:`<strong>비대칭키(공개키)</strong>: 느리지만 키를 안전하게 교환 가능. TLS 핸드셰이크에서 서버 인증과 세션 키 교환에 사용. <strong>대칭키</strong>: 빠르지만 키를 안전하게 공유하기 어려움. 실제 데이터 암호화에 사용. TLS는 비대칭키로 <strong>대칭 세션 키를 안전하게 교환</strong>한 후, 이후 통신은 빠른 대칭키(AES-256 등)로 암호화합니다. 비대칭키의 보안성과 대칭키의 속도를 결합합니다.`},
+{q:"인증서 체인(Certificate Chain)과 루트 CA의 역할을 설명하세요.",a:`<strong>Root CA</strong>(Comodo, DigiCert 등)는 OS/브라우저에 사전 신뢰 목록으로 내장됩니다. Root CA가 Intermediate CA를 서명, Intermediate CA가 서버 인증서를 서명합니다. 브라우저는 <strong>Chain of Trust</strong>를 검증합니다: 서버 인증서 → Intermediate CA → Root CA. Root CA가 직접 서버 인증서를 서명하지 않는 이유는 보안: Root CA의 개인키를 오프라인으로 안전하게 보관하기 위해서입니다.`}
+],
+trap:{wrong:`"HTTPS를 사용하면 중간자(MITM) 공격이 완전히 불가능하다."`,
+explain:`<strong>틀린 이유</strong>: 인증서 핀닝(Certificate Pinning) 없이는 MITM이 가능합니다. 기업 네트워크의 SSL 검사(프록시가 인증서를 재발급), 가짜 CA 인증서가 신뢰 목록에 추가된 경우, 사용자가 경고를 무시하고 자체 서명 인증서를 수락하는 경우 등에서 MITM이 가능합니다. HSTS(HTTP Strict Transport Security)와 Certificate Transparency가 추가 방어 수단입니다.`}
+},
+{id:46,cat:"네트워크",q:"HTTP/1.1, HTTP/2, HTTP/3의 차이점을 설명하세요.",
+a:`<strong>HTTP/1.1</strong>: Keep-Alive, HOL Blocking, 텍스트 기반. <strong>HTTP/2</strong>: 바이너리, 멀티플렉싱, 헤더 압축(HPACK), 서버 푸시. TCP HOL Blocking은 여전히. <strong>HTTP/3</strong>: UDP 기반 QUIC, TCP HOL Blocking 해소, 0-RTT, 모바일 네트워크 전환에 강함.`,
+links:[{t:"HTTP/1 vs 2 vs 3",u:"https://www.cloudflare.com/learning/performance/http2-vs-http1.1/"},{t:"HTTP/3 Explained",u:"https://http3-explained.haxx.se/"}],
+fqs:[
+{q:"HTTP/2의 멀티플렉싱이 HTTP/1.1의 파이프라이닝과 다른 점은?",a:`<strong>HTTP/1.1 파이프라이닝</strong>: 응답을 기다리지 않고 여러 요청을 전송하지만, 응답은 반드시 <strong>요청 순서대로</strong> 받아야 합니다(HOL Blocking). 브라우저에서 거의 사용하지 않습니다. <strong>HTTP/2 멀티플렉싱</strong>: 하나의 TCP 연결에서 여러 스트림이 동시에, 독립적으로 동작합니다. 응답 순서 제약이 없어 HOL Blocking이 없습니다. 단, TCP 패킷 손실 시 TCP 레벨의 HOL Blocking은 발생합니다.`},
+{q:"QUIC이 TCP의 Head-of-Line Blocking을 어떻게 해결하나요?",a:`QUIC은 <strong>여러 스트림을 독립적으로 관리</strong>합니다. UDP 위에서 각 스트림이 독립적인 패킷 시퀀스를 가집니다. 스트림 A의 패킷이 손실되어 재전송을 기다려도, 스트림 B, C는 계속 처리됩니다. 반면 TCP에서는 손실된 패킷 이후의 모든 데이터가 블로킹됩니다(TCP HOL Blocking). HTTP/3는 이 QUIC의 스트림 독립성으로 HTTP/2의 남은 HOL Blocking 문제를 해결합니다.`}
+],
+trap:{wrong:`"HTTP/2는 HTTP/1.1보다 항상 빠르다. 멀티플렉싱으로 연결 수를 줄이기 때문이다."`,
+explain:`<strong>항상 그렇지 않습니다</strong>: 패킷 손실이 많은 네트워크 환경에서는 HTTP/2가 더 느릴 수 있습니다. TCP HOL Blocking 때문에 하나의 스트림이 막히면 모든 스트림이 영향을 받습니다. 또한 서버 푸시를 잘못 사용하면 오히려 대역폭을 낭비합니다. 패킷 손실이 적은 안정적인 네트워크에서는 HTTP/2가 유리하지만, 모바일 환경에서는 HTTP/3가 더 나을 수 있습니다.`}
+},
+{id:47,cat:"네트워크",q:"DNS 동작 원리를 단계별로 설명하세요.",
+a:`① 브라우저 캐시 → ② OS 캐시/hosts → ③ Recursive Resolver(ISP) → ④ Root DNS → ⑤ TLD DNS(.com/.kr) → ⑥ Authoritative DNS → ⑦ IP 반환 → ⑧ TTL과 함께 캐시. DNS는 주로 UDP 53번 포트 사용.`,
+links:[{t:"How DNS Works",u:"https://howdns.works/"},{t:"Cloudflare DNS",u:"https://www.cloudflare.com/learning/dns/what-is-dns/"}],
+fqs:[
+{q:"DNS TTL 값이 너무 낮거나 높을 때 각각의 문제점은?",a:`<strong>TTL이 너무 낮을 때</strong>: 캐시가 자주 만료되어 DNS 서버에 쿼리가 빈번합니다. 지연시간 증가, DNS 서버 부하 증가. 단, IP 변경(서버 이전) 시 빠르게 반영됩니다. <strong>TTL이 너무 높을 때</strong>: 캐시가 오래 유지되어 DNS 서버 쿼리가 줄어 성능이 좋습니다. 단, IP를 변경해도 TTL이 만료될 때까지 이전 IP로 연결됩니다. 일반적으로 평시 3600초, 서버 이전 예정 시 300초로 낮춥니다.`},
+{q:"DNS over HTTPS(DoH)와 DNS over TLS(DoT)가 필요한 이유는?",a:`일반 DNS는 UDP 평문 전송이라 <strong>ISP나 네트워크 중간자가 DNS 쿼리를 볼 수 있습니다</strong>(어떤 사이트를 방문하는지 파악). DoH는 DNS 쿼리를 HTTPS로 암호화하여 ISP가 추적하기 어렵습니다. DoT는 TLS로 암호화. 단, DoH/DoT 사용 시 DNS Resolver(Cloudflare 1.1.1.1, Google 8.8.8.8)가 쿼리를 볼 수 있어 신뢰 대상이 이동할 뿐입니다.`}
+],
+trap:{wrong:`"DNS는 IP 주소를 도메인으로 변환하는 서비스다."`,
+explain:`<strong>반대로 설명했습니다</strong>: DNS(Domain Name System)는 <strong>도메인(사람이 읽기 쉬운 이름)을 IP 주소(컴퓨터가 사용하는 숫자)로 변환</strong>합니다. 예: google.com → 142.250.x.x. 역방향 조회(IP → 도메인)는 <strong>역방향 DNS(Reverse DNS Lookup)</strong>이라 하며, PTR 레코드를 사용하고 이것이 기본 DNS 동작이 아닙니다.`}
+},
+{id:48,cat:"네트워크",q:"REST API 설계 원칙 6가지를 설명하세요.",
+a:`<strong>1.Uniform Interface</strong>: URI로 리소스 식별, 표현으로 조작. <strong>2.Stateless</strong>: 서버가 클라이언트 상태 저장 안 함. <strong>3.Cacheable</strong>: 응답에 캐시 가능 여부 표시. <strong>4.Client-Server</strong>: 관심사 분리. <strong>5.Layered System</strong>: 중간 계층 존재 가능. <strong>6.Code on Demand(선택)</strong>: 실행 코드 전송 가능.`,
+links:[{t:"REST API Design",u:"https://restfulapi.net/"},{t:"Microsoft REST Guidelines",u:"https://github.com/microsoft/api-guidelines/blob/vNext/azure/Guidelines.md"}],
+fqs:[
+{q:"HTTP 메서드(GET, POST, PUT, PATCH, DELETE)의 idempotent 특성을 설명하세요.",a:`<strong>Idempotent(멱등성)</strong>: 동일한 요청을 여러 번 보내도 결과가 같음. <code>GET</code>: 멱등, 안전(side effect 없음). <code>PUT</code>: 멱등(전체 교체, 같은 데이터 여러 번 보내도 동일). <code>DELETE</code>: 멱등(이미 삭제된 리소스에 재요청 시 404지만 상태는 동일). <code>POST</code>: 비멱등(매번 새 리소스 생성). <code>PATCH</code>: 보통 비멱등(부분 수정의 특성에 따라 다름). 네트워크 오류 시 재시도 전략에 중요합니다.`},
+{q:"REST의 Stateless 원칙과 성능 최적화의 트레이드오프를 설명하세요.",a:`Stateless는 서버가 클라이언트 상태를 유지하지 않아 <strong>수평 확장이 용이</strong>합니다(어느 서버로 요청이 가든 동일하게 처리). 단점: 매 요청에 인증 정보(JWT 등)를 포함해야 하고, 토큰 크기만큼 오버헤드가 발생합니다. Stateful(세션)은 서버가 상태를 기억해 요청이 가볍지만, 세션 공유(Redis)나 Sticky Session이 필요하여 확장이 복잡합니다.`}
+],
+trap:{wrong:`"REST API에서 GET 요청은 절대로 요청 body를 가질 수 없다."`,
+explain:`<strong>HTTP 명세상 GET에 body를 금지하지 않지만</strong>, RFC 7231은 GET body를 무시하는 구현을 허용합니다. 실제로 많은 서버(nginx, Apache)와 라이브러리가 GET 요청의 body를 무시하거나 거부합니다. Elasticsearch는 GET 요청에 body를 허용하지만, REST API 설계 모범 사례는 GET에 body를 사용하지 않는 것입니다. 복잡한 검색 조건은 POST나 쿼리 파라미터를 사용하세요.`}
+},
+{id:49,cat:"네트워크",q:"웹소켓(WebSocket)과 HTTP 폴링의 차이를 설명하세요.",
+a:`<strong>HTTP 폴링</strong>: 클라이언트가 주기적으로 요청, 비효율. <strong>Long Polling</strong>: 서버가 데이터 올 때까지 연결 유지. <strong>WebSocket</strong>: HTTP 업그레이드로 시작 후 전이중(Full-Duplex) 양방향 연결 유지. 실시간 채팅, 게임에 적합. <strong>SSE</strong>: 서버→클라이언트 단방향.`,
+links:[{t:"WebSocket vs Polling",u:"https://ably.com/blog/websockets-vs-long-polling"},{t:"MDN WebSocket",u:"https://developer.mozilla.org/en-US/docs/Web/API/WebSocket"}],
+fqs:[
+{q:"WebSocket 연결이 끊어졌을 때 자동 재연결을 구현하는 방법은?",a:`<strong>Exponential Backoff + Jitter</strong> 전략을 사용합니다. 재시도 간격을 지수적으로 증가(1s, 2s, 4s, 8s...)시키고 무작위 지터(0~1s)를 추가합니다. 코드: <code>delay = min(cap, base * 2^attempt) + random(0, 1000)</code>. 또한 <strong>Heartbeat(ping/pong)</strong>으로 연결 상태를 주기적으로 확인합니다. 브라우저의 beforeunload 이벤트로 의도적 연결 종료와 네트워크 오류를 구분합니다.`},
+{q:"Socket.IO와 순수 WebSocket의 차이는?",a:`<strong>Socket.IO</strong>: WebSocket + 폴백(폴링), 자동 재연결, 네임스페이스/룸, 이벤트 기반 API, 브로드캐스팅, Redis 어댑터로 다중 서버 지원. <strong>순수 WebSocket</strong>: 표준 프로토콜, 오버헤드 적음, 더 빠름, 클라이언트가 직접 브라우저 API 사용. Socket.IO 서버와 순수 WebSocket 클라이언트는 호환되지 않습니다. 실시간 기능이 복잡하면 Socket.IO, 단순하고 성능이 중요하면 순수 WebSocket을 선택합니다.`}
+],
+trap:{wrong:`"WebSocket은 HTTP보다 항상 빠르다. 매번 연결을 새로 열지 않기 때문이다."`,
+explain:`<strong>상황에 따라 다릅니다</strong>: 지속적인 양방향 통신에서는 WebSocket이 유리합니다. 하지만 단순 요청-응답 패턴에서는 HTTP가 더 적합합니다. WebSocket은 연결을 유지하므로 서버 리소스를 계속 소비합니다. 수천 명의 사용자가 자주 연결/해제를 반복하는 경우 오히려 HTTP가 효율적일 수 있습니다. <strong>사용 패턴에 따라 선택</strong>해야 합니다.`}
+},
+{id:50,cat:"네트워크",q:"쿠키, 세션, JWT의 차이와 인증에 활용하는 방법을 설명하세요.",
+a:`<strong>쿠키</strong>: 브라우저 저장, 매 요청 자동 전송, 4KB 제한. <strong>세션</strong>: 서버에 상태 저장, 세션 ID를 쿠키에 저장. 수평 확장 어려움. <strong>JWT</strong>: Stateless, 자체 포함(페이로드에 사용자 정보), 서명 검증. 확장성 좋지만 토큰 무효화가 어렵고 페이로드가 암호화 아닌 Base64 인코딩임을 주의.`,
+links:[{t:"JWT.io",u:"https://jwt.io/"},{t:"Session vs JWT",u:"https://www.geeksforgeeks.org/session-vs-token-based-authentication/"}],
+fqs:[
+{q:"JWT 토큰을 무효화(Revoke)하기 어려운 이유와 해결 방법은?",a:`JWT는 Stateless라 서버가 발급된 토큰 목록을 갖지 않습니다. 토큰이 만료되기 전에는 서버가 검증만 하고 차단할 방법이 없습니다(계정 탈취/로그아웃 처리 어려움). <strong>해결 방법</strong>: ① <strong>짧은 만료 시간</strong>(15분) + <strong>Refresh Token</strong> 조합. ② <strong>블랙리스트</strong>(Redis에 무효화된 토큰 저장, Stateless 포기). ③ <strong>토큰 버전</strong>: 사용자 DB에 token_version 필드, JWT에 포함시켜 버전 불일치 시 거부.`},
+{q:"JWT의 페이로드에 민감한 정보를 넣으면 안 되는 이유는?",a:`JWT는 <strong>Base64URL 인코딩</strong>된 것이지 암호화가 아닙니다. 헤더.페이로드.서명의 구조에서 헤더와 페이로드는 누구나 디코딩해서 읽을 수 있습니다. 서명은 <strong>위변조 감지</strong>를 위한 것이지 내용을 숨기지 않습니다. 비밀번호, 개인정보 등 민감한 데이터는 페이로드에 포함하면 안 됩니다. 내용을 숨겨야 한다면 JWE(JSON Web Encryption)를 사용해야 합니다.`}
+],
+trap:{wrong:`"세션을 사용하면 서버를 여러 대로 확장(Scale Out)할 수 없다."`,
+explain:`<strong>세션도 수평 확장이 가능합니다</strong>: ① <strong>Sticky Session(Session Affinity)</strong>: 로드 밸런서가 같은 클라이언트를 항상 같은 서버로 라우팅. ② <strong>세션 공유 스토어</strong>: Redis 같은 중앙 세션 저장소에 세션을 저장해 모든 서버가 공유. JWT만이 확장에 유리한 것이 아니라, 세션도 올바르게 설계하면 수평 확장이 가능합니다.`}
+},
+{id:51,cat:"네트워크",q:"CORS란 무엇이고 어떻게 해결하나요?",
+a:`CORS(Cross-Origin Resource Sharing)는 브라우저의 동일 출처 정책(SOP)을 우회해 다른 출처 리소스 접근을 허용하는 메커니즘. Preflight(OPTIONS)로 서버 확인 후 실제 요청. <strong>해결</strong>: 서버에서 <code>Access-Control-Allow-Origin</code> 헤더 설정, Nginx 프록시, JSONP(레거시).`,
+links:[{t:"MDN CORS",u:"https://developer.mozilla.org/ko/docs/Web/HTTP/CORS"},{t:"CORS Explained",u:"https://cors-test.codehappy.dev/"}],
+fqs:[
+{q:"Preflight 요청이 발생하는 조건과 최적화 방법은?",a:`<strong>Simple Request</strong>(Preflight 없음): GET/POST/HEAD + 기본 헤더 + application/x-www-form-urlencoded 또는 text/plain. <strong>Preflight 발생 조건</strong>: PUT/DELETE/PATCH, 커스텀 헤더(Authorization, Content-Type: application/json), PATCH 등. <strong>최적화</strong>: <code>Access-Control-Max-Age</code> 헤더로 Preflight 결과를 캐싱(기본 5초, 최대 7200초 또는 86400초). 이 기간 동안 같은 요청은 Preflight를 다시 보내지 않습니다.`},
+{q:"Access-Control-Allow-Origin: * 설정의 보안 위험과 올바른 설정 방법은?",a:`<code>*</code>는 모든 출처를 허용하여 <strong>CSRF(Cross-Site Request Forgery)</strong> 위험이 있습니다. 또한 <code>*</code>와 함께 <code>Access-Control-Allow-Credentials: true</code>를 설정할 수 없습니다(쿠키, 인증 헤더 전송 불가). <strong>올바른 방법</strong>: 허용된 출처 목록을 관리하고 요청의 Origin 헤더를 확인해 동적으로 응답. 예: 화이트리스트에 있으면 해당 Origin을 그대로 응답, 없으면 CORS 헤더 미포함.`}
+],
+trap:{wrong:`"CORS는 서버 보안 기능이다. 서버가 허용하지 않으면 요청 자체가 서버에 도달하지 않는다."`,
+explain:`<strong>틀린 이유</strong>: CORS는 <strong>브라우저의 보안 기능</strong>입니다. Preflight를 포함한 실제 요청은 서버에 도달합니다. 서버는 응답을 반환하지만 <strong>브라우저가 응답을 차단</strong>합니다. curl이나 서버-서버 통신에서는 CORS가 적용되지 않습니다. 따라서 CORS만으로는 서버를 보호할 수 없으며, 서버 측 인증/인가가 별도로 필요합니다.`}
+},
+{id:52,cat:"네트워크",q:"로드 밸런싱 알고리즘의 종류를 설명하세요.",
+a:`<strong>Round Robin</strong>: 순서대로. <strong>Weighted Round Robin</strong>: 성능 기반 가중치. <strong>Least Connections</strong>: 연결 수 적은 서버로. <strong>Least Response Time</strong>: 응답 시간 기준. <strong>IP Hash</strong>: 클라이언트 IP 기반(세션 유지). L4(TCP/UDP 기준)와 L7(HTTP 헤더/URL 기준)로 구분.`,
+links:[{t:"Load Balancing Algorithms",u:"https://www.nginx.com/resources/glossary/load-balancing/"},{t:"AWS ELB Guide",u:"https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html"}],
+fqs:[
+{q:"L4 로드 밸런서와 L7 로드 밸런서의 구체적 차이와 사용 사례는?",a:`<strong>L4(Transport Layer)</strong>: TCP/UDP 포트 기반, 패킷 내용을 보지 않아 빠름. 단순 IP:Port 기반 라우팅. AWS NLB, HAProxy. <strong>L7(Application Layer)</strong>: HTTP 헤더, URL, 쿠키 기반 라우팅. URL path에 따라 다른 서버로(/api → API 서버, /images → 정적 서버), A/B 테스트, 블루-그린 배포 가능. SSL 종료, 압축, 캐싱도 가능. AWS ALB, nginx. L7은 기능이 많지만 L4보다 처리 오버헤드가 큽니다.`},
+{q:"헬스 체크(Health Check)가 로드 밸런서에서 중요한 이유는?",a:`로드 밸런서가 주기적으로 서버 상태를 확인합니다. <strong>Active Health Check</strong>: 주기적으로 서버에 요청을 보내 응답 확인. <strong>Passive Health Check</strong>: 실제 요청의 응답을 모니터링. 서버가 비정상이면 자동으로 로드 밸런서 풀에서 제거하고, 회복되면 재추가. 헬스 체크가 없으면 다운된 서버에 계속 요청이 가서 에러 발생. 헬스 체크 엔드포인트에서 DB 연결, 캐시 상태 등 의존성도 함께 확인하는 것이 좋습니다.`}
+],
+trap:{wrong:`"Round Robin은 모든 서버의 처리 능력이 같을 때만 사용해야 한다."`,
+explain:`<strong>Round Robin은 가장 단순한 기본값이고 현실에서 많이 사용됩니다</strong>. 서버 스펙이 다를 때는 Weighted Round Robin으로 가중치를 부여하면 됩니다. 또한 현대 클라우드 환경에서 같은 스펙의 서버를 오토스케일링으로 관리하는 경우가 많아 Round Robin이 적합합니다. 긴 요청 처리 시간 차이가 있거나 연결 수가 중요한 경우 Least Connections이 더 적합합니다.`}
+},
+{id:53,cat:"네트워크",q:"CDN(Content Delivery Network)의 동작 원리와 이점을 설명하세요.",
+a:`전 세계 분산 엣지 서버에 콘텐츠를 캐싱, 사용자에게 가장 가까운 서버에서 제공. 지연시간 감소, 오리진 서버 부하 감소, 대역폭 비용 절감, DDoS 방어. Cloudflare, AWS CloudFront, Fastly가 대표적.`,
+links:[{t:"How CDN Works",u:"https://www.cloudflare.com/learning/cdn/what-is-a-cdn/"},{t:"AWS CloudFront",u:"https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html"}],
+fqs:[
+{q:"CDN 캐시 무효화(Cache Invalidation)는 어떻게 하고, 왜 어려운가요?",a:`CDN 캐시 무효화는 어렵습니다. <strong>방법</strong>: ① URL 버전 파라미터(<code>style.css?v=2</code>): 신뢰할 수 있지만 URL이 변경됨. ② 파일 내용 해시(<code>style.abc123.css</code>): 내용이 같으면 URL이 같아 캐시 재사용. ③ CDN API로 수동 퍼지(Purge): 즉시 반영되지만 모든 엣지에 전파 시간 필요. <strong>어려운 이유</strong>: "CDN 캐시 무효화와 변수 명명은 CS에서 가장 어려운 두 문제"라는 말이 있을 정도로 복잡합니다.`},
+{q:"CDN이 동적 콘텐츠(Dynamic Content)를 처리하는 방법은?",a:`전통적으로 CDN은 정적 콘텐츠(이미지, CSS, JS)를 캐싱했지만, 현대 CDN은 동적 콘텐츠도 처리합니다. ① <strong>Edge Computing</strong>(Cloudflare Workers, Lambda@Edge): 엣지에서 코드 실행으로 오리진 요청 없이 동적 응답 생성. ② <strong>Dynamic Acceleration</strong>: 캐싱하지 않고 최적화된 경로로 오리진에 요청을 전달. ③ <strong>API 캐싱</strong>: Vary 헤더로 특정 API 응답을 캐시. 동적 콘텐츠에서도 CDN은 네트워크 경로 최적화 효과가 있습니다.`}
+],
+trap:{wrong:`"CDN을 사용하면 원본(오리진) 서버는 필요 없다."`,
+explain:`<strong>틀린 이유</strong>: CDN은 오리진 서버의 콘텐츠를 캐싱하고 배포하는 역할을 합니다. <strong>오리진 서버는 반드시 필요</strong>합니다. 캐시가 만료되거나 없는 경우(Cache Miss), CDN은 오리진에서 콘텐츠를 가져와야 합니다. CDN이 있어도 오리진 서버의 안정성과 성능이 중요합니다. CDN은 오리진의 부하를 줄이는 것이지 대체하는 것이 아닙니다.`}
+},
+{id:54,cat:"네트워크",q:"OAuth 2.0의 Authorization Code Flow를 설명하세요.",
+a:`① 앱에서 Authorization Server로 리다이렉트 → ② 사용자 동의 → ③ Authorization Code를 redirect_uri로 전달 → ④ 앱 서버가 Code + client_secret으로 Access Token 교환 → ⑤ Access Token으로 Resource Server 호출. PKCE와 함께 보안성이 높습니다.`,
+links:[{t:"OAuth 2.0 Simplified",u:"https://www.oauth.com/"},{t:"Auth0 OAuth 2.0",u:"https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow"}],
+fqs:[
+{q:"PKCE(Proof Key for Code Exchange)가 필요한 이유를 설명하세요.",a:`모바일 앱이나 SPA는 <code>client_secret</code>을 안전하게 저장할 수 없습니다(클라이언트 측 코드에서 추출 가능). PKCE는 비밀 없이도 Authorization Code Injection 공격을 방지합니다. 흐름: ① 랜덤 <code>code_verifier</code> 생성 → ② SHA256 해시인 <code>code_challenge</code>를 인가 요청에 포함 → ③ Token 요청 시 원본 <code>code_verifier</code> 전송 → ④ 서버가 해시 검증. 공격자가 코드를 탈취해도 <code>code_verifier</code> 없이 토큰 교환 불가.`},
+{q:"Implicit Flow가 더 이상 권장되지 않는 이유는?",a:`Implicit Flow는 SPA 등에서 Access Token을 URL fragment(#token=...)로 직접 전달하여 Authorization Code 없이 즉시 토큰을 얻습니다. <strong>보안 문제</strong>: ① URL에 토큰이 노출되어 브라우저 히스토리, 로그에 기록될 수 있음. ② Referrer 헤더로 다른 사이트에 토큰 유출 가능. ③ 토큰 주입(Token Injection) 공격에 취약. OAuth 2.0 보안 BCP(RFC 9700)는 Implicit Flow를 금지하고 PKCE를 포함한 Authorization Code Flow를 권장합니다.`}
+],
+trap:{wrong:`"OAuth 2.0은 인증(Authentication) 프로토콜이다."`,
+explain:`<strong>틀린 이유</strong>: OAuth 2.0은 <strong>인가(Authorization)</strong> 프레임워크입니다. "특정 리소스에 접근할 권한을 위임"하는 것입니다. 인증(누구인지 확인)을 위해서는 <strong>OpenID Connect(OIDC)</strong>를 사용합니다. OIDC는 OAuth 2.0 위에 구축된 인증 레이어로, ID Token(JWT)을 통해 사용자 신원 정보를 제공합니다. "Google로 로그인"은 OAuth 2.0이 아니라 OAuth 2.0 기반의 OIDC를 사용합니다.`}
+},
+{id:55,cat:"네트워크",q:"TCP 3-way, 4-way handshake를 설명하세요.",
+a:`<strong>3-way(연결 수립)</strong>: ① SYN → ② SYN-ACK → ③ ACK. <strong>4-way(연결 종료)</strong>: ① FIN → ② ACK → ③ FIN → ④ ACK. 클라이언트는 마지막 ACK 후 <strong>TIME_WAIT</strong> 상태로 2MSL 대기.`,
+links:[{t:"TCP Handshake",u:"https://www.cloudflare.com/learning/ddos/glossary/tcp-ip/"}],
+fqs:[
+{q:"TIME_WAIT 상태가 필요한 이유는 무엇인가요?",a:`두 가지 이유가 있습니다. ① <strong>신뢰성 있는 연결 종료</strong>: 마지막 ACK가 손실되면 서버가 FIN을 재전송합니다. TIME_WAIT 동안 대기하면 이 재전송 FIN을 처리할 수 있습니다. ② <strong>지연 패킷 처리</strong>: 네트워크에 떠돌던 지연 패킷이 새로운 연결에서 처리되는 것을 방지. TIME_WAIT 기간(2MSL, 보통 60~120초)은 이전 연결의 모든 패킷이 사라질 충분한 시간입니다. TIME_WAIT이 너무 많으면 포트가 부족해질 수 있어 <code>SO_REUSEADDR</code> 설정이 필요할 수 있습니다.`},
+{q:"서버를 닫을 때 TCP 연결을 제대로 종료하지 않으면 어떤 문제가 생기나요?",a:`<strong>TCP RST(Reset)</strong>를 보내거나 연결을 그냥 끊으면: 클라이언트가 응답 중인 데이터를 잃을 수 있습니다(파일 다운로드 중단). 클라이언트는 Connection Reset 에러를 받습니다. <strong>올바른 Graceful Shutdown</strong>: 새 요청 수락 중단 → 기존 요청 처리 완료 대기 → FIN 전송. Kubernetes에서 Pod 종료 시 <code>terminationGracePeriodSeconds</code>를 충분히 설정하는 이유입니다.`}
+],
+trap:{wrong:`"3-way handshake에서 클라이언트가 SYN을 보내면 서버가 데이터 전송을 시작할 수 있다."`,
+explain:`<strong>틀린 이유</strong>: 3-way handshake가 <strong>완전히 완료된 후</strong>(마지막 ACK 이후)에야 데이터를 전송할 수 있습니다. 단, TLS 1.3에서는 1-RTT로 핸드셰이크를 단축하고, QUIC(HTTP/3)는 0-RTT 재연결을 지원합니다. TCP Fast Open은 SYN 패킷에 데이터를 포함시키는 최적화이지만 보안 우려로 기본 비활성화입니다.`}
+},
+{id:56,cat:"네트워크",q:"SQL Injection과 XSS 공격의 원리와 방어 방법을 설명하세요.",
+a:`<strong>SQL Injection</strong>: 사용자 입력에 SQL 구문 삽입. 방어: Prepared Statement, ORM. <strong>XSS(Cross-Site Scripting)</strong>: 악성 스크립트 삽입. 방어: 입력값 검증/이스케이핑, CSP 헤더, HttpOnly 쿠키. OWASP Top 10 필수 지식.`,
+links:[{t:"OWASP Top 10",u:"https://owasp.org/www-project-top-ten/"},{t:"SQL Injection Prevention",u:"https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html"}],
+fqs:[
+{q:"Prepared Statement가 SQL Injection을 방어하는 원리를 설명하세요.",a:`Prepared Statement는 SQL 구조와 데이터를 <strong>분리</strong>합니다. <code>SELECT * FROM users WHERE name = ?</code>로 먼저 SQL을 컴파일하고, 이후 파라미터를 바인딩합니다. 바인딩된 값은 <strong>절대 SQL 코드로 해석되지 않습니다</strong>. 입력값에 <code>'; DROP TABLE users; --</code>이 들어와도 문자열 데이터로만 처리됩니다. ORM이 내부적으로 Prepared Statement를 사용하는 경우가 많지만, raw query를 작성할 때는 직접 적용해야 합니다.`},
+{q:"Stored XSS와 Reflected XSS, DOM-based XSS의 차이를 설명하세요.",a:`<strong>Stored XSS</strong>: 악성 스크립트가 DB에 저장되어 다른 사용자가 페이지를 조회할 때마다 실행. 댓글, 게시글. 가장 위험. <strong>Reflected XSS</strong>: 악성 URL의 파라미터가 서버에서 응답에 그대로 반영. URL을 클릭한 사용자에게만 영향. <strong>DOM-based XSS</strong>: 서버를 거치지 않고 클라이언트 사이드 JavaScript에서 DOM을 직접 조작할 때 발생. <code>document.write(location.hash)</code> 같은 경우. CSP, innerText 사용(innerHTML 대신)으로 방어.`}
+],
+trap:{wrong:`"이스케이핑(Escaping)만으로 SQL Injection을 완전히 방어할 수 있다."`,
+explain:`<strong>불충분합니다</strong>: 이스케이핑은 취약점을 줄이지만 완전하지 않습니다. 멀티바이트 문자셋 인코딩 취약점, 이스케이핑 함수의 버그, 개발자의 실수로 이스케이핑을 빠뜨리는 경우 등 우회 방법이 있습니다. <strong>Prepared Statement + 최소 권한 원칙</strong>의 조합이 더 안전합니다. 이스케이핑은 보완책이지 주 방어 수단이 아닙니다.`}
+},
+{id:57,cat:"운영체제",q:"프로세스(Process)와 스레드(Thread)의 차이를 설명하세요.",
+a:`<strong>프로세스</strong>: OS가 자원 할당 단위, 독립된 메모리 공간(코드/데이터/힙/스택). <strong>스레드</strong>: 프로세스 내 실행 단위, 코드/데이터/힙 공유, 스택만 독립적. 스레드 간 컨텍스트 스위칭이 더 저렴. 공유 메모리로 동기화 문제 주의.`,
+links:[{t:"Process vs Thread",u:"https://www.geeksforgeeks.org/difference-between-process-and-thread/"}],
+fqs:[
+{q:"멀티프로세스와 멀티스레드를 선택하는 기준은?",a:`<strong>멀티프로세스</strong>: 격리성 필요 시, IPC 사용, 메모리 더 사용. 예: 웹 브라우저 탭별 프로세스. <strong>멀티스레드</strong>: 메모리 공유로 통신 빠름, 동기화 복잡, CPU 집약적 병렬 작업. Python은 GIL로 멀티스레드 CPU 계산 불가 → 멀티프로세스.`},
+{q:"코루틴이 스레드보다 효율적인 이유는?",a:`스레드는 OS 관리, 스택 1MB~8MB, 생성/전환 비용 큼. <strong>코루틴</strong>: 사용자 공간 스케줄링, 스택 수KB, 전환 비용이 함수 호출 수준. Go의 Goroutine은 수십만 개 동시 실행 가능.`}
+],
+trap:{wrong:`"멀티스레드로 실행하면 코어 수만큼 항상 속도가 빨라진다."`,
+explain:`<strong>틀린 이유</strong>: 암달의 법칙: 직렬 부분이 병렬화 최대 성능을 제한합니다. 동기화 오버헤드, 캐시 일관성 경쟁도 있습니다.`}
+},
+{id:58,cat:"운영체제",q:"CPU 스케줄링 알고리즘의 종류와 특징을 설명하세요.",
+a:`<strong>FCFS</strong>: 순서대로, Convoy Effect. <strong>SJF</strong>: 짧은 순, 최적 평균 대기. <strong>Round Robin</strong>: 타임 퀀텀, 공정. <strong>Priority</strong>: 우선순위, 기아 문제. <strong>MLFQ</strong>: 여러 큐+피드백, 현대 OS 대부분 사용.`,
+links:[{t:"CPU Scheduling",u:"https://www.geeksforgeeks.org/cpu-scheduling-in-operating-systems/"}],
+fqs:[
+{q:"Round Robin에서 타임 퀀텀이 너무 작거나 크면?",a:`<strong>너무 작을 때</strong>: 컨텍스트 스위칭 오버헤드 급증. <strong>너무 클 때</strong>: FCFS와 동일해지고 응답 시간 저하. 현대 Linux CFS는 작업량에 따라 동적 조정.`},
+{q:"SJF가 실제 OS에서 쓰이지 않는 이유는?",a:`다음 작업의 실행 시간을 미리 알 수 없습니다. 실제 OS는 과거 실행 시간 기반 예측(Exponential Averaging)이나 MLFQ로 근사합니다.`}
+],
+trap:{wrong:`"SJF는 실제 운영체제에서 널리 사용된다."`,
+explain:`<strong>틀린 이유</strong>: 다음 작업 실행 시간을 미리 알 수 없어 완벽한 구현이 불가능합니다. 이론적 기준점으로 사용됩니다.`}
+},
+{id:59,cat:"운영체제",q:"뮤텍스(Mutex)와 세마포어(Semaphore)의 차이를 설명하세요.",
+a:`<strong>뮤텍스</strong>: 이진 잠금(0/1), 소유권 있음(잠금한 스레드만 해제). <strong>세마포어</strong>: 카운터(N개), 여러 동시 접근 제어 가능, 소유권 없음. 세마포어는 생산자-소비자 패턴에 적합.`,
+links:[{t:"Mutex vs Semaphore",u:"https://www.geeksforgeeks.org/mutex-vs-semaphore/"}],
+fqs:[
+{q:"데드락의 4가지 발생 조건과 방지 방법은?",a:`① 상호 배제: 자원 공유 가능하게. ② 점유와 대기: 모든 자원 한 번에 요청. ③ 비선점: 자원 해제 후 재요청. ④ 순환 대기: 같은 순서로 잠금 획득. 실제로는 순환 대기 방지+타임아웃을 주로 사용.`},
+{q:"스핀락이 일반 뮤텍스보다 나은 상황은?",a:`잠금 보유 시간이 매우 짧을 때 컨텍스트 스위칭 비용을 아낄 수 있습니다. 멀티코어 환경에서 유리. 단일 코어나 잠금이 긴 경우 CPU 낭비.`}
+],
+trap:{wrong:`"세마포어는 뮤텍스가 할 수 있는 모든 것을 할 수 있으므로 항상 세마포어가 낫다."`,
+explain:`<strong>의미론적으로 다릅니다</strong>: 뮤텍스는 소유권으로 우선순위 역전 방지, 재귀 잠금 지원. 세마포어는 시그널링 패턴에 적합. 용도에 맞게 선택해야 합니다.`}
+},
+{id:60,cat:"운영체제",q:"가상 메모리(Virtual Memory)와 페이징(Paging)을 설명하세요.",
+a:`<strong>가상 메모리</strong>: 물리 메모리보다 큰 주소 공간 제공. 실제 사용 부분만 물리 메모리에 로드. <strong>페이징</strong>: 가상 주소를 고정 크기 페이지로 분할, 페이지 테이블로 물리 주소 매핑. <strong>TLB</strong>가 페이지 테이블 캐시.`,
+links:[{t:"Virtual Memory",u:"https://pages.cs.wisc.edu/~remzi/OSTEP/vm-intro.pdf"}],
+fqs:[
+{q:"페이지 폴트 처리 과정은?",a:`① 가상 주소 접근 → ② Present bit=0 → ③ OS에 예외 발생 → ④ 디스크에서 물리 메모리로 로드 → ⑤ 페이지 테이블 업데이트 → ⑥ 재시작. Major Fault(디스크 읽기)는 느리고 과도하면 Thrashing 발생.`},
+{q:"TLB 없으면 성능이 얼마나 저하되나?",a:`x86-64의 4-level 페이지 테이블은 메모리 접근 1번당 추가 4번 필요. TLB 히트율 99%면 평균 1.01배, TLB 없으면 5배 저하.`}
+],
+trap:{wrong:`"가상 메모리의 주 목적은 물리 메모리보다 큰 프로그램 실행이다."`,
+explain:`<strong>틀린 이유</strong>: 주 목적은 프로세스에게 연속된 큰 주소 공간 제공과 메모리 격리입니다. 스왑 사용은 성능이 매우 저하됩니다.`}
+},
+{id:61,cat:"운영체제",q:"시스템 콜(System Call)이란 무엇이고 왜 필요한가요?",
+a:`사용자 프로그램이 OS 커널 기능을 요청하는 인터페이스. CPU의 User Mode와 Kernel Mode를 구분해 보안 강화. 파일 I/O(<code>read/write</code>), 프로세스 생성(<code>fork/exec</code>), 메모리 할당(<code>mmap</code>). 시스템 콜 시 소프트웨어 인터럽트 후 커널 모드 전환.`,
+links:[{t:"Linux System Calls",u:"https://man7.org/linux/man-pages/man2/syscalls.2.html"}],
+fqs:[
+{q:"User/Kernel Mode 구분 이유와 전환 비용은?",a:`사용자 프로그램이 하드웨어 직접 접근이나 다른 프로세스 메모리 침범을 방지합니다. 전환 비용은 수백ns~수μs. io_uring으로 커널 우회 최적화도 가능합니다.`},
+{q:"vDSO가 시스템 콜 오버헤드를 줄이는 방법은?",a:`<code>gettimeofday()</code>같은 읽기 전용 시스템 콜을 커널 모드 전환 없이 실행. 커널이 사용자 공간에 가상 라이브러리를 매핑, 읽기 전용 커널 메모리에 직접 접근. 비용을 1/10으로 줄입니다.`}
+],
+trap:{wrong:`"시스템 콜을 많이 사용하면 항상 성능이 저하된다."`,
+explain:`<strong>맥락에 따라 다릅니다</strong>: 1바이트씩 읽으면 시스템 콜이 많지만 버퍼링으로 줄일 수 있습니다. 시스템 콜 횟수와 데이터 크기의 균형이 중요합니다.`}
+},
+{id:62,cat:"운영체제",q:"페이지 교체 알고리즘(LRU, LFU, FIFO)을 비교 설명하세요.",
+a:`<strong>FIFO</strong>: 가장 먼저 들어온 페이지 교체. Belady's Anomaly 발생 가능. <strong>LRU</strong>: 가장 오래 미사용 페이지 교체. <strong>LFU</strong>: 참조 빈도 가장 낮은 페이지 교체. <strong>Optimal(OPT)</strong>: 미래 참조 기반, 이론적 기준.`,
+links:[{t:"Page Replacement",u:"https://www.geeksforgeeks.org/page-replacement-algorithms-in-operating-systems/"}],
+fqs:[
+{q:"Belady's Anomaly가 FIFO에서 발생하는 이유는?",a:`프레임이 늘어나면 FIFO에서 교체 패턴이 바뀌어 자주 사용되는 페이지가 제거될 수 있습니다. LRU는 Stack Property를 가져 발생하지 않습니다.`},
+{q:"Linux의 실제 LRU 근사 방법은?",a:`각 페이지에 Access bit를 두고 Clock Algorithm으로 순환합니다. Access bit=0인 페이지 교체, bit=1이면 0으로 리셋 후 통과. 완전한 LRU는 아니지만 실용적으로 충분합니다.`}
+],
+trap:{wrong:`"LRU는 항상 Optimal 알고리즘에 가까운 성능을 낸다."`,
+explain:`<strong>순환 참조 패턴에서는 최악이 됩니다</strong>: 5개 프레임, 6개 페이지 순환 접근 시 LRU는 항상 다음에 쓸 페이지를 교체합니다.`}
+},
+{id:63,cat:"운영체제",q:"컨텍스트 스위칭(Context Switching)이란 무엇이고 어떤 비용이 발생하나요?",
+a:`CPU가 현재 실행 프로세스/스레드를 멈추고 다른 것으로 전환. <strong>비용</strong>: PCB 저장/복원, CPU 레지스터 저장/복원, TLB 플러시(프로세스 전환 시), 캐시 무효화. 스레드 전환 < 프로세스 전환 < 코루틴 전환.`,
+links:[{t:"Context Switching",u:"https://www.geeksforgeeks.org/context-switch-in-operating-system/"}],
+fqs:[
+{q:"컨텍스트 스위칭 최소화 방법은?",a:`① 스레드 풀: 스레드 재사용. ② 비동기 I/O+이벤트 루프: Node.js 방식. ③ 코루틴: 사용자 공간 스케줄링. ④ CPU 핀닝: 스레드를 특정 코어에 고정해 캐시 재사용.`},
+{q:"PCB(Process Control Block)에 저장되는 정보는?",a:`PID, 프로세스 상태, 프로그램 카운터, CPU 레지스터, 메모리 관리 정보(페이지 테이블 주소), I/O 상태, 계정 정보. 컨텍스트 스위칭 시 저장/복원됩니다.`}
+],
+trap:{wrong:`"컨텍스트 스위칭 횟수를 최소화하면 항상 성능이 향상된다."`,
+explain:`<strong>항상 그렇지 않습니다</strong>: I/O bound 프로그램에서 스레드를 줄이면 I/O 대기 중 CPU가 유휴 상태가 됩니다. 적절한 스레드 수와 컨텍스트 스위칭이 CPU 활용률을 높입니다.`}
+},
+{id:64,cat:"운영체제",q:"인터럽트(Interrupt)의 종류와 처리 과정을 설명하세요.",
+a:`<strong>하드웨어 인터럽트</strong>: 키보드, 네트워크 카드 등 외부 장치. <strong>소프트웨어 인터럽트(트랩)</strong>: 시스템 콜, 오버플로우, 0으로 나누기. 처리: ① 실행 중단 → ② 레지스터 저장 → ③ ISR 실행 → ④ 복원 → ⑤ 재개.`,
+links:[{t:"Interrupts",u:"https://www.geeksforgeeks.org/interrupts/"}],
+fqs:[
+{q:"인터럽트와 폴링의 차이는?",a:`<strong>폴링</strong>: CPU가 주기적으로 장치 상태 확인, CPU 낭비, 초고속 I/O에 유리(DPDK). <strong>인터럽트</strong>: 이벤트 발생 시 장치가 CPU에 알림, 효율적, 드문 이벤트에 유리.`},
+{q:"인터럽트 핸들러(ISR)가 짧아야 하는 이유는?",a:`ISR 실행 중 같은 우선순위 이하 인터럽트가 블로킹됩니다. Linux의 Top Half/Bottom Half 분리: Top Half는 최소 작업, Bottom Half(softirq, workqueue)에서 나머지 처리.`}
+],
+trap:{wrong:`"인터럽트는 항상 외부 하드웨어에 의해서만 발생한다."`,
+explain:`<strong>틀린 이유</strong>: 소프트웨어 인터럽트(예외, 트랩)도 있습니다. 0 나누기, 페이지 폴트, 시스템 콜(int 0x80)이 소프트웨어 인터럽트입니다.`}
+},
+{id:65,cat:"운영체제",q:"동기/비동기, 블로킹/논블로킹의 차이를 설명하세요.",
+a:`<strong>동기/비동기</strong>: 결과를 받아야 다음 작업을 하는지 여부. <strong>블로킹/논블로킹</strong>: 호출된 함수가 제어권을 즉시 반환하는지 여부. <strong>비동기+논블로킹</strong>(가장 효율적): Node.js 이벤트 루프 방식.`,
+links:[{t:"Async vs Blocking",u:"https://www.baeldung.com/cs/async-vs-multi-threading"}],
+fqs:[
+{q:"비동기+논블로킹의 실제 예시는?",a:`Node.js, Python asyncio, io_uring. I/O를 요청하고 즉시 다른 작업 처리. I/O 완료 시 콜백/이벤트로 알림. 동기+논블로킹은 O_NONBLOCK 플래그, 비동기+블로킹은 select/poll.`},
+{q:"Node.js가 싱글 스레드로 높은 동시성을 처리하는 원리는?",a:`이벤트 루프 + libuv 라이브러리. I/O는 스레드 풀/OS 비동기 API(epoll)에 위임. I/O 대기 중 이벤트 루프가 다른 요청 처리. 단, CPU 집약적 작업은 Worker Threads 필요.`}
+],
+trap:{wrong:`"비동기 프로그래밍은 멀티스레딩과 같은 개념이다."`,
+explain:`<strong>다른 개념입니다</strong>: 비동기는 완료 여부를 콜백/이벤트로 처리, 싱글 스레드에서도 가능합니다. 멀티스레딩은 CPU 코어 병렬 활용이 목적입니다.`}
+},
+{id:66,cat:"운영체제",q:"가비지 컬렉션(Garbage Collection)의 주요 알고리즘을 설명하세요.",
+a:`<strong>Reference Counting</strong>: 즉시 해제, 순환 참조 해결 불가. <strong>Mark and Sweep</strong>: Root에서 도달 가능 객체 마킹 후 나머지 해제, STW 발생. <strong>Generational GC</strong>: 젊은/늙은 세대 구분. JVM/V8 사용. Weak Generational Hypothesis 기반.`,
+links:[{t:"JVM GC",u:"https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html"}],
+fqs:[
+{q:"STW(Stop The World)가 발생하는 이유와 최소화 방법은?",a:`GC 중 힙 수정 방지를 위해 모든 스레드를 일시 정지합니다. 최소화: 증분 GC, 동시 GC(Concurrent), 병렬 GC. Java G1GC, ZGC, Shenandoah가 STW를 최소화합니다.`},
+{q:"GC 언어에서도 메모리 누수가 발생하는 이유는?",a:`GC는 도달 불가능한 객체만 수거합니다. 정적 컬렉션에 계속 추가, 이벤트 리스너 미해제, 클로저의 외부 변수 참조 유지 시 누수 발생. WeakReference/WeakMap으로 방지 가능.`}
+],
+trap:{wrong:`"GC가 있는 언어에서는 메모리 누수가 발생하지 않는다."`,
+explain:`<strong>틀린 이유</strong>: 의도치 않게 참조를 유지하면 GC가 수거할 수 없습니다. 이벤트 리스너 미해제, 캐시 미정리 등이 누수 원인입니다.`}
+},
+{id:67,cat:"OOP/패턴",q:"객체지향 프로그래밍의 4가지 핵심 원칙을 설명하세요.",
+a:`<strong>캡슐화</strong>: 데이터와 행동을 묶고 외부 접근 제한. <strong>상속</strong>: 부모 속성/메서드를 자식이 재사용. <strong>다형성</strong>: 같은 인터페이스로 다른 동작(오버라이딩, 오버로딩). <strong>추상화</strong>: 불필요한 세부사항 숨김(인터페이스, 추상 클래스).`,
+links:[{t:"OOP Concepts",u:"https://www.geeksforgeeks.org/object-oriented-programming-oops-concept-in-java/"}],
+fqs:[
+{q:"컴파일 타임 다형성과 런타임 다형성의 차이는?",a:`<strong>컴파일 타임</strong>: 오버로딩, 컴파일러가 호출 메서드 결정(Early Binding). <strong>런타임</strong>: 오버라이딩, 실행 시 실제 객체 메서드 호출(Late Binding, Dynamic Dispatch). <code>Animal a = new Dog(); a.speak();</code>에서 Dog의 speak() 호출.`},
+{q:"캡슐화와 정보 은닉은 같은 개념인가요?",a:`연관되어 있지만 다릅니다. 캡슐화는 데이터와 메서드를 묶는 것(구조적). 정보 은닉은 구현 세부사항을 숨기는 것(의도적). 모든 필드를 public으로 하면 캡슐화는 되어 있지만 정보 은닉은 안된 것입니다.`}
+],
+trap:{wrong:`"상속은 항상 코드 재사용성을 높인다."`,
+explain:`<strong>항상 그렇지 않습니다</strong>: 잘못된 상속은 결합도를 높이고 깨지기 쉬운 기반 클래스 문제를 만듭니다. "상속보다 컴포지션을 선호하라"는 원칙이 있습니다.`}
+},
+{id:68,cat:"OOP/패턴",q:"SOLID 원칙 5가지를 설명하세요.",
+a:`<strong>S(SRP)</strong>: 단일 책임. <strong>O(OCP)</strong>: 개방-폐쇄. <strong>L(LSP)</strong>: 리스코프 치환. <strong>I(ISP)</strong>: 인터페이스 분리. <strong>D(DIP)</strong>: 의존 역전.`,
+links:[{t:"SOLID Principles",u:"https://refactoring.guru/solid"}],
+fqs:[
+{q:"LSP를 위반하는 구체적 예시는?",a:`Rectangle을 상속한 Square: setWidth와 setHeight가 독립적이어야 하는데 Square에서는 하나 변경 시 둘 다 변경. 부모 타입을 자식으로 교체하면 테스트 실패. instanceof 체크가 여러 곳에 등장하면 LSP 위반 신호.`},
+{q:"OCP 구현과 전략 패턴의 연관성은?",a:`OCP는 확장에 열림, 수정에 닫힘. 전략 패턴으로 구현: 알고리즘을 인터페이스로 추출해 새 전략 추가로 확장. 기존 코드 수정 없이 새 동작 추가.`}
+],
+trap:{wrong:`"SOLID를 모두 완벽하게 적용하면 항상 더 좋은 소프트웨어가 된다."`,
+explain:`<strong>과도한 적용은 나쁩니다</strong>: 작은 프로젝트에 모든 SOLID를 적용하면 불필요한 복잡도가 증가합니다. 변경이 잦고 팀이 클수록 가치 있습니다.`}
+},
+{id:69,cat:"OOP/패턴",q:"디자인 패턴의 분류(생성, 구조, 행위)와 대표 패턴을 설명하세요.",
+a:`<strong>생성</strong>: Singleton, Factory, Builder, Prototype. <strong>구조</strong>: Adapter, Decorator, Facade, Proxy. <strong>행위</strong>: Strategy, Observer, Command, Iterator, Template Method. GoF의 23개 패턴이 기본.`,
+links:[{t:"Refactoring Guru",u:"https://refactoring.guru/design-patterns"}],
+fqs:[
+{q:"Facade 패턴과 Proxy 패턴의 차이는?",a:`<strong>Facade</strong>: 복잡한 서브시스템을 단순화된 인터페이스로 제공. <strong>Proxy</strong>: 원본 객체 대리인, 접근 제어/지연 로딩/캐싱 추가. 인터페이스가 원본과 동일해야 합니다.`},
+{q:"패턴을 배우는 것이 위험한 이유는?",a:`Pattern Fever: 모든 문제를 패턴으로 해결하려는 충동. 단순한 if문을 Strategy Pattern으로 만드는 과도한 적용. 패턴의 목적은 반복되는 설계 문제의 해결책이지 항상 적용해야 하는 규칙이 아닙니다.`}
+],
+trap:{wrong:`"디자인 패턴은 언어 독립적이라 모든 언어에서 동일하게 구현된다."`,
+explain:`<strong>구현은 언어마다 다릅니다</strong>: Python 함수는 일급 객체라 Strategy를 단순히 함수로 구현 가능. Kotlin object는 Singleton을 언어 레벨 지원. 언어 관용구를 우선 활용하세요.`}
+},
+{id:70,cat:"OOP/패턴",q:"싱글톤 패턴(Singleton)의 구현 방법과 문제점을 설명하세요.",
+a:`클래스 인스턴스가 단 하나. private 생성자, static 인스턴스, public static getInstance(). 멀티스레드 안전성 위해 Enum 싱글톤 권장. <strong>문제점</strong>: 전역 상태, 테스트 어려움, 의존성 숨김.`,
+links:[{t:"Singleton Pattern",u:"https://refactoring.guru/design-patterns/singleton"}],
+fqs:[
+{q:"Enum 싱글톤이 가장 안전한 이유는?",a:`직렬화 안전(역직렬화 시 새 인스턴스 생성 불가), Reflection 안전(JVM이 막음), 스레드 안전(클래스 로딩 보장). 4줄로 완전한 싱글톤 구현.`},
+{q:"싱글톤 대신 DI를 사용하는 이유는?",a:`싱글톤은 테스트에서 Mock 객체 주입이 어렵습니다. DI 컨테이너(Spring)는 싱글톤 스코프 빈을 관리하면서도 인터페이스에 의존하므로 구현체 교체와 테스트가 쉽습니다.`}
+],
+trap:{wrong:`"싱글톤 패턴을 사용하면 멀티스레드 환경에서 항상 동일한 인스턴스를 보장한다."`,
+explain:`<strong>구현에 따라 다릅니다</strong>: 단순 lazy initialization은 멀티스레드에서 여러 인스턴스가 생성될 수 있습니다. Enum 방식이나 static inner class holder 방식이 안전합니다.`}
+},
+{id:71,cat:"OOP/패턴",q:"팩토리 메서드 패턴과 추상 팩토리 패턴의 차이를 설명하세요.",
+a:`<strong>팩토리 메서드</strong>: 객체 생성을 서브클래스에 위임, 하나의 제품 타입. <strong>추상 팩토리</strong>: 관련된 객체들의 패밀리를 생성하는 인터페이스. 여러 제품 타입을 일관된 방식으로 생성. 예: UI 키트(Windows/Mac 스타일).`,
+links:[{t:"Factory Patterns",u:"https://refactoring.guru/design-patterns/abstract-factory"}],
+fqs:[
+{q:"팩토리 메서드가 new 키워드 직접 사용과 다른 점은?",a:`new ConcreteProduct()는 구체 클래스에 직접 의존. 팩토리 메서드는 생성 로직 분리로 OCP 준수, 테스트에서 Mock 팩토리로 교체 가능, 생성 과정에 검증 추가 가능.`},
+{q:"Builder 패턴이 필요한 상황은?",a:`생성자 파라미터가 많을 때, 일부는 선택적일 때. Effective Java Builder: <code>Person.Builder("홍길동").age(30).email("...").build()</code>. 불변 객체 생성, 가독성 향상, 필수/선택 파라미터 구분. Lombok @Builder가 자동 생성.`}
+],
+trap:{wrong:`"항상 추상 팩토리가 팩토리 메서드보다 좋다."`,
+explain:`<strong>틀린 이유</strong>: 단순히 하나의 타입을 생성할 때는 팩토리 메서드가 더 단순하고 적합합니다. 지금 해결해야 할 문제에 맞는 패턴을 선택해야 합니다.`}
+},
+{id:72,cat:"OOP/패턴",q:"옵저버 패턴(Observer)을 설명하고 실제 사용 예시를 들어주세요.",
+a:`Subject(발행자)와 Observer(구독자). Subject 상태 변경 시 모든 Observer에게 자동 알림. 느슨한 결합. 예시: 이벤트 리스너, MVC(View가 Model 관찰), RxJS, 알림 시스템. Observer 해제를 반드시 처리해야 메모리 누수 방지.`,
+links:[{t:"Observer Pattern",u:"https://refactoring.guru/design-patterns/observer"}],
+fqs:[
+{q:"옵저버 패턴에서 메모리 누수 방지 방법은?",a:`Subject가 Observer에 강한 참조 유지. 방지: ① 컴포넌트 소멸 시 unsubscribe() 호출. ② WeakReference로 Observer 저장. ③ RxJS의 takeUntil(destroy$). React useEffect의 cleanup 함수가 처리.`},
+{q:"옵저버 패턴과 Pub/Sub 패턴의 차이는?",a:`<strong>옵저버</strong>: Subject와 Observer가 직접 알고 있음. <strong>Pub/Sub</strong>: 브로커/이벤트 채널이 중간에 있어 발행자와 구독자가 서로 모름. 더 느슨한 결합. Kafka, RabbitMQ가 Pub/Sub.`}
+],
+trap:{wrong:`"옵저버 패턴과 Pub/Sub 패턴은 완전히 같다."`,
+explain:`<strong>유사하지만 다릅니다</strong>: 옵저버는 직접 관계, Pub/Sub는 메시지 브로커가 중간에서 분리합니다. 구조와 결합도가 다릅니다.`}
+},
+{id:73,cat:"OOP/패턴",q:"의존성 주입(Dependency Injection)이란 무엇이고 왜 사용하나요?",
+a:`클래스가 의존하는 객체를 직접 생성하지 않고 외부에서 주입받는 기법. 생성자/세터/인터페이스 주입. <strong>장점</strong>: 느슨한 결합, 테스트 용이성(Mock 주입), 코드 재사용성. Spring, Angular, NestJS가 DI 컨테이너 내장.`,
+links:[{t:"Dependency Injection",u:"https://www.freecodecamp.org/news/a-quick-intro-to-dependency-injection-what-it-is-and-when-to-use-it-7578c84fa88f/"}],
+fqs:[
+{q:"생성자 주입이 필드 주입보다 권장되는 이유는?",a:`① final 필드로 불변성 보장. ② 필수 의존성을 명시적으로 표현(null 방지). ③ 순환 의존성을 시작 시점에 발견. ④ DI 컨테이너 없이 직접 주입 가능(테스트 용이). Spring 공식 문서도 생성자 주입 권장.`},
+{q:"DI 없이 테스트하기 어려운 예시는?",a:`<code>class OrderService { private DB db = new MySQL(); }</code>: MySQL 없이 테스트 불가. DI 후: <code>new OrderService(new MockDB())</code>로 Mock 주입 가능. 테스트 가능한 코드 = 좋은 설계.`}
+],
+trap:{wrong:`"DI는 Spring 같은 프레임워크 없이 구현할 수 없다."`,
+explain:`<strong>틀린 이유</strong>: 생성자에 의존성을 전달하는 것이 수동 DI입니다. 프레임워크는 대규모에서 관리를 자동화할 뿐입니다.`}
+},
+{id:74,cat:"OOP/패턴",q:"전략 패턴(Strategy Pattern)과 상태 패턴(State Pattern)의 차이를 설명하세요.",
+a:`<strong>전략 패턴</strong>: 알고리즘 패밀리를 정의하고 런타임에 교체. 클라이언트가 전략 선택. <strong>상태 패턴</strong>: 객체의 내부 상태에 따라 행동이 변함. 상태 전환 로직이 상태 객체 내부에 있음. 구조적으로 유사하지만 의도가 다릅니다.`,
+links:[{t:"Strategy vs State",u:"https://refactoring.guru/design-patterns/strategy"}],
+fqs:[
+{q:"전략 패턴으로 if-else를 제거하는 예시는?",a:`Map<String, PaymentStrategy>로 타입별 전략 매핑. <code>strategies.get(type).pay(amount)</code>. 새 결제 수단 추가 시 기존 코드 수정 없이 새 전략 클래스만 추가(OCP 준수).`},
+{q:"상태 전환을 Context가 할지 State가 할지 선택 기준은?",a:`상태가 복잡하고 전환 규칙이 많으면 State 객체가 관리. Context가 단순해지고 관련 State 클래스만 수정하면 됩니다. 상태가 적으면 Context가 관리하는 것이 파악이 쉽습니다.`}
+],
+trap:{wrong:`"전략 패턴과 상태 패턴은 구조가 같으니 아무것이나 사용해도 된다."`,
+explain:`<strong>의도가 다릅니다</strong>: 전략은 클라이언트가 결정, 상태는 Context의 내부 상태에 의존. 팀원이 코드를 읽을 때 의도를 명확히 전달하기 위해 맥락에 맞는 패턴을 사용해야 합니다.`}
+},
+{id:75,cat:"OOP/패턴",q:"함수형 프로그래밍(FP)의 핵심 개념과 OOP와의 차이를 설명하세요.",
+a:`<strong>순수 함수</strong>(같은 입력→같은 출력, 부작용 없음), <strong>불변성</strong>, <strong>일급 함수</strong>, <strong>고차 함수</strong>(map/filter/reduce), <strong>참조 투명성</strong>. OOP는 상태+메서드를 객체로, FP는 데이터 변환을 함수 합성으로 표현.`,
+links:[{t:"FP Concepts",u:"https://www.geeksforgeeks.org/functional-programming-paradigm/"}],
+fqs:[
+{q:"불변성을 유지하면서 데이터를 어떻게 업데이트하나요?",a:`직접 수정하지 않고 새 데이터 생성. JS: <code>{...oldObj, field: newValue}</code>, <code>[...arr, newItem]</code>. 깊은 중첩은 Immer 라이브러리 사용. 장점: 부작용 없음, 동시성 안전, Undo 용이.`},
+{q:"순수 함수의 장점과 부작용이 필요한 경우는?",a:`<strong>순수 함수</strong>: 테스트 용이, 메모이제이션 가능, 병렬 실행 안전. <strong>부작용 필요</strong>: DB 저장, 네트워크, 파일 I/O. FP 전략: 부작용을 프로그램 경계(가장자리)로 밀어내기.`}
+],
+trap:{wrong:`"함수형 프로그래밍은 OOP보다 항상 더 나은 패러다임이다."`,
+explain:`<strong>각자 적합한 문제가 있습니다</strong>: FP는 데이터 변환/수학적 계산에, OOP는 복잡한 상태/도메인 모델링에 강합니다. 현대 언어는 멀티 패러다임으로 혼용합니다.`}
+},
+{id:76,cat:"OOP/패턴",q:"인터페이스와 추상 클래스의 차이와 선택 기준을 설명하세요.",
+a:`<strong>추상 클래스</strong>: 공통 구현 가능, 단일 상속, IS-A 관계, 상태(필드) 가능. <strong>인터페이스</strong>: 순수 계약(Java 8+ default 메서드), 다중 구현 가능, CAN-DO 관계. "~이다" 관계면 추상 클래스, "~할 수 있다"면 인터페이스.`,
+links:[{t:"Interface vs Abstract",u:"https://www.geeksforgeeks.org/difference-between-abstract-class-and-interface-in-java/"}],
+fqs:[
+{q:"Java 8에서 인터페이스에 default 메서드가 추가된 이유는?",a:`기존 인터페이스에 새 메서드 추가 시 모든 구현 클래스가 컴파일 에러. default 메서드로 하위 호환성을 유지하며 인터페이스 확장. Collection 프레임워크에 forEach, stream()을 추가하기 위해 도입.`},
+{q:"Java sealed class의 용도는?",a:`Java 17에서 sealed class/interface는 어떤 클래스가 상속할 수 있는지 제한. <code>sealed interface Shape permits Circle, Rectangle {}</code>. switch 표현식에서 모든 경우를 컴파일러가 체크. Kotlin sealed class와 유사.`}
+],
+trap:{wrong:`"Java 인터페이스는 상태를 가질 수 없다."`,
+explain:`<strong>부분적으로 틀립니다</strong>: 인터페이스에 선언된 필드는 자동으로 public static final(상수). 인스턴스 상태는 불가하지만 상수는 가능합니다.`}
+},
+{id:77,cat:"OOP/패턴",q:"MVC, MVP, MVVM 아키텍처 패턴의 차이를 설명하세요.",
+a:`<strong>MVC</strong>: Controller가 Model 업데이트, View가 Model 직접 관찰. 서버 사이드에 적합. <strong>MVP</strong>: Presenter가 View와 Model 중재, 테스트 용이. <strong>MVVM</strong>: ViewModel이 View 상태 관리, 데이터 바인딩으로 동기화. Angular, SwiftUI에 적합.`,
+links:[{t:"MVC vs MVP vs MVVM",u:"https://www.geeksforgeeks.org/difference-between-mvc-mvp-and-mvvm-architecture-pattern-in-android/"}],
+fqs:[
+{q:"iOS에서 MVVM이 MVC보다 선호되는 이유는?",a:`전통적 MVC의 Massive View Controller 문제. UIViewController가 모든 로직을 담당해 수천 줄이 됩니다. MVVM에서 ViewModel은 UIKit 몰라도 되고 단위 테스트가 쉽습니다.`},
+{q:"MVVM에서 데이터 바인딩 구현 방법은?",a:`View가 ViewModel의 속성을 관찰. ① RxSwift Observable + subscribe. ② Kotlin StateFlow/LiveData. ③ SwiftUI의 @Published/@ObservedObject. ④ Angular의 [(ngModel)] 양방향 바인딩.`}
+],
+trap:{wrong:`"MVC에서 Controller는 View와 Model 사이의 모든 통신을 중재한다."`,
+explain:`<strong>원래 MVC에서는 틀립니다</strong>: 원래 MVC에서 View는 Model을 직접 관찰합니다. Controller는 사용자 입력을 처리하는 역할. 현대 서버 사이드 MVC에서는 변형됐습니다.`}
+},
+{id:78,cat:"OOP/패턴",q:"데코레이터 패턴(Decorator)이란 무엇이고 상속과의 차이는?",
+a:`객체에 동적으로 새로운 책임을 추가. 같은 인터페이스를 구현한 래퍼 객체로 원본을 감쌉니다. <strong>상속과 차이</strong>: 상속은 컴파일 타임 고정, 데코레이터는 런타임에 조합 가능. Java BufferedReader, Python @decorator가 대표적.`,
+links:[{t:"Decorator Pattern",u:"https://refactoring.guru/design-patterns/decorator"}],
+fqs:[
+{q:"Python @decorator 문법의 동작 원리는?",a:`@log_time def my_func()는 <code>my_func = log_time(my_func)</code>와 동일. log_time은 함수를 받아 새 함수 반환. 원본 수정 없이 로깅, 캐싱, 인증 추가. functools.wraps로 원본 메타데이터 유지.`},
+{q:"Java I/O에서 데코레이터 패턴 사용 이유는?",a:`<code>new BufferedReader(new InputStreamReader(new FileInputStream(...)))</code>처럼 레이어 조합. 상속으로 모든 조합을 만들면 클래스 폭발 발생. 데코레이터로 n개 기능 조합을 n개 클래스로 처리.`}
+],
+trap:{wrong:`"데코레이터 패턴과 Proxy 패턴은 동일하다."`,
+explain:`<strong>의도가 다릅니다</strong>: 데코레이터는 기능 추가/확장이 목적. Proxy는 접근 제어, 지연 로딩이 목적. 클라이언트가 Proxy를 사용하는지 모를 수도 있습니다.`}
+},
+{id:79,cat:"OOP/패턴",q:"이벤트 소싱(Event Sourcing)과 CQRS 패턴을 설명하세요.",
+a:`<strong>이벤트 소싱</strong>: 현재 상태 대신 상태 변경 이벤트 시퀀스를 저장. 완전한 이력, 감사 로그, 시간 여행 디버깅. <strong>CQRS</strong>: 읽기(Query)와 쓰기(Command) 모델 분리. 각각 최적화된 스토어 사용 가능. MSA에서 특히 유용.`,
+links:[{t:"Event Sourcing",u:"https://microservices.io/patterns/data/event-sourcing.html"}],
+fqs:[
+{q:"이벤트 소싱의 단점과 언제 사용하지 말아야 하는지는?",a:`<strong>단점</strong>: 이벤트 재생으로 현재 상태 조회 느림, 스키마 변경 어려움, 구현 복잡. <strong>사용 금지</strong>: 단순 CRUD, 이력 추적 불필요한 경우. 계좌 거래처럼 이력이 중요한 도메인에 적합.`},
+{q:"CQRS에서 읽기/쓰기 모델 동기화 방법은?",a:`Eventually Consistent: 쓰기 → 이벤트 발행 → 이벤트 핸들러가 읽기 모델 업데이트. 메시지 큐(Kafka)로 비동기 처리. CDC로 자동 동기화 가능.`}
+],
+trap:{wrong:`"CQRS를 적용하면 데이터 일관성 문제가 없다."`,
+explain:`<strong>오히려 반대입니다</strong>: CQRS는 Strong Consistency를 포기하고 Eventual Consistency를 택합니다. 읽기 모델이 항상 약간 뒤처질 수 있습니다.`}
+},
+{id:80,cat:"웹/프론트",q:"브라우저 렌더링 과정을 단계별로 설명하세요.",
+a:`① HTML 파싱 → DOM 트리 ② CSS 파싱 → CSSOM 트리 ③ Render Tree 생성 ④ Layout(Reflow): 위치/크기 계산 ⑤ Paint: 픽셀 채우기 ⑥ Composite: 레이어 합성. CSS transform/opacity는 Composite만 트리거해 성능이 좋습니다.`,
+links:[{t:"Critical Rendering Path",u:"https://web.dev/articles/critical-rendering-path"}],
+fqs:[
+{q:"Reflow와 Repaint를 최소화하는 방법은?",a:`<strong>Reflow 줄이기</strong>: 스타일 변경을 한 번에, DocumentFragment 사용, 레이아웃 스래싱 방지(읽기/쓰기 분리), transform/opacity 사용. <strong>Repaint 줄이기</strong>: will-change: transform으로 레이어 분리.`},
+{q:"JavaScript를 만났을 때 렌더링이 블로킹되는 이유는?",a:`JS가 DOM을 수정할 수 있어 파서가 JS를 만나면 HTML 파싱을 멈추고 실행. <strong>해결</strong>: async(비동기 다운로드, 즉시 실행) 또는 defer(파싱 완료 후 순서대로 실행).`}
+],
+trap:{wrong:`"CSS는 렌더링 블로킹과 관련이 없다."`,
+explain:`<strong>틀린 이유</strong>: CSS는 Render Blocking Resource입니다. CSSOM 완성 전까지 첫 번째 페인트가 지연됩니다.`}
+},
+{id:81,cat:"웹/프론트",q:"Virtual DOM이란 무엇이고 React에서 어떻게 동작하나요?",
+a:`실제 DOM의 경량 JavaScript 복사본. 상태 변경 시 새 Virtual DOM을 생성하고 이전과 Diffing으로 비교해 변경된 부분만 실제 DOM에 반영(Reconciliation). React 18의 Fiber는 렌더링을 중단/재개 가능.`,
+links:[{t:"React Reconciliation",u:"https://legacy.reactjs.org/docs/reconciliation.html"}],
+fqs:[
+{q:"React의 key prop이 중요한 이유는?",a:`key로 React가 리스트에서 어떤 항목이 변경됐는지 식별. key 없이(또는 index를 key로): 중간 삽입 시 이후 모든 항목 re-render. 고유 id로: 변경된 항목만 re-render.`},
+{q:"React 18 Concurrent Features의 UX 개선 원리는?",a:`기존은 렌더링이 시작되면 완료될 때까지 멈출 수 없었습니다. Concurrent Rendering: 렌더링을 중단 가능한 작은 단위로 분할. startTransition으로 낮은 우선순위 업데이트 표시.`}
+],
+trap:{wrong:`"Virtual DOM을 사용하면 직접 DOM 조작보다 항상 빠르다."`,
+explain:`<strong>틀린 이유</strong>: Virtual DOM은 개발 편의성과 예측 가능성을 위한 추상화입니다. Diffing 알고리즘 오버헤드가 있습니다. Svelte는 Virtual DOM 없이 컴파일 타임 최적화를 사용합니다.`}
+},
+{id:82,cat:"웹/프론트",q:"웹 성능 최적화 기법을 설명하세요.",
+a:`<strong>로딩</strong>: 코드 스플리팅, Lazy Loading, 이미지 최적화(WebP), CDN, HTTP/2. <strong>렌더링</strong>: Critical CSS 인라인, JS async/defer. <strong>런타임</strong>: 디바운싱/쓰로틀링, 가상 스크롤, Web Workers. <strong>측정</strong>: Core Web Vitals(LCP, INP, CLS).`,
+links:[{t:"Web.dev Performance",u:"https://web.dev/explore/fast"}],
+fqs:[
+{q:"Core Web Vitals 세 가지 지표를 설명하세요.",a:`<strong>LCP</strong>: 가장 큰 콘텐츠 렌더링 시간, 2.5초 이하. <strong>INP</strong>: 상호작용 응답성, 200ms 이하. <strong>CLS</strong>: 시각적 안정성, 0.1 이하. 이미지/광고 공간 미리 확보, JS 실행 시간 단축.`},
+{q:"가상 스크롤의 원리는?",a:`실제 보이는 영역의 항목(10~30개)만 DOM에 유지. 스크롤 위치에 따라 동적으로 DOM 항목 교체. 상단/하단 패딩으로 스크롤바 정상 동작. React-Window, TanStack Virtual이 대표적.`}
+],
+trap:{wrong:`"페이지 로딩 최적화는 JavaScript 파일 크기를 줄이는 것이 전부다."`,
+explain:`<strong>이미지가 보통 더 중요합니다</strong>: 이미지가 페이지 무게의 60~70%를 차지합니다. 서버 응답 시간, 폰트 로딩, CSS도 중요합니다. 측정 먼저, 최적화 나중이 원칙입니다.`}
+},
+{id:83,cat:"웹/프론트",q:"이벤트 버블링, 캡처링, 이벤트 위임을 설명하세요.",
+a:`<strong>캡처링</strong>: document에서 타겟으로 내려옴. <strong>버블링</strong>: 타겟에서 document로 올라옴. <strong>이벤트 위임</strong>: 부모에 하나의 핸들러를 등록하고 event.target으로 실제 발생 요소 확인. 동적으로 생성된 요소에 효과적이고 메모리 효율적.`,
+links:[{t:"Event Delegation",u:"https://javascript.info/event-delegation"}],
+fqs:[
+{q:"stopPropagation()과 preventDefault()의 차이는?",a:`<strong>stopPropagation()</strong>: 이벤트 버블링/캡처링 중단, 동작은 그대로. <strong>preventDefault()</strong>: 브라우저 기본 동작 취소(a 태그 이동, form 제출 등), 이벤트 전파는 계속.`},
+{q:"이벤트 위임이 메모리 효율적인 이유는?",a:`1000개 항목에 각각 핸들러 추가 → 1000개 함수 참조. 이벤트 위임: 부모에 1개 핸들러만 등록. 동적으로 항목 추가/삭제 시 핸들러 등록/해제 불필요.`}
+],
+trap:{wrong:`"이벤트 위임은 모든 상황에서 항상 좋다."`,
+explain:`<strong>예외가 있습니다</strong>: focus/blur는 버블링 안됨(focusin/focusout은 됨). mouseenter/mouseleave도 버블링 안됨. stopPropagation()을 자식에서 호출하면 위임 불동작.`}
+},
+{id:84,cat:"웹/프론트",q:"JavaScript의 이벤트 루프(Event Loop)를 설명하세요.",
+a:`JS는 싱글 스레드, 비동기 처리는 이벤트 루프로. Call Stack에서 동기 코드 실행, 비동기 완료 시 콜백이 Task Queue에 추가. Call Stack이 비면 Queue에서 꺼냄. <strong>Microtask Queue</strong>(Promise)는 Task Queue보다 우선 실행.`,
+links:[{t:"JavaScript Event Loop",u:"https://javascript.info/event-loop"},{t:"Loupe Visualizer",u:"http://latentflip.com/loupe/"}],
+fqs:[
+{q:"console.log(1); setTimeout(()=>console.log(2),0); Promise.resolve().then(()=>console.log(3)); console.log(4);의 출력 순서는?",a:`<strong>1, 4, 3, 2</strong>. 1,4는 동기. setTimeout은 Task Queue. Promise.then은 Microtask Queue. Microtask가 Task보다 우선: 3 출력 후 2 출력.`},
+{q:"async/await가 내부적으로 어떻게 동작하나요?",a:`async function은 항상 Promise 반환. await는 Promise resolve까지 함수 실행 일시 중단, 이벤트 루프에 제어권 반납. 내부적으로 Promise .then()으로 변환됩니다.`}
+],
+trap:{wrong:`"setTimeout(fn, 0)은 즉시 실행된다."`,
+explain:`<strong>틀린 이유</strong>: Task Queue에 추가되어 Call Stack이 완전히 비고 Microtask Queue도 비어야만 실행됩니다. 브라우저는 중첩된 setTimeout에 최소 4ms 지연을 강제합니다.`}
+},
+{id:85,cat:"웹/프론트",q:"CSS 박스 모델과 display 속성(block, inline, flex, grid)을 설명하세요.",
+a:`<strong>박스 모델</strong>: content → padding → border → margin. box-sizing: border-box가 직관적. <strong>block</strong>: 새 줄, 너비 100%. <strong>inline</strong>: 흐름 유지, width/height 미적용. <strong>Flexbox</strong>: 1차원. <strong>Grid</strong>: 2차원 레이아웃.`,
+links:[{t:"Flexbox Froggy",u:"https://flexboxfroggy.com/"},{t:"CSS Grid Garden",u:"https://cssgridgarden.com/"}],
+fqs:[
+{q:"Flexbox와 CSS Grid는 언제 각각 사용하나요?",a:`<strong>Flexbox</strong>: 한 방향(행/열), 항목 정렬/균등 분배. 내비게이션 바, 버튼 그룹. <strong>Grid</strong>: 두 방향, 페이지 전체 레이아웃, 겹침 처리. 실제로 Grid로 구조를 잡고 Flex로 내부 컴포넌트를 정렬합니다.`},
+{q:"CSS position 5가지의 차이는?",a:`static: 기본값. relative: 원래 위치 기준, 공간 유지. absolute: positioned 조상 기준, 흐름 제거. fixed: 뷰포트 기준, 스크롤해도 고정. sticky: 스크롤 전 relative, 이후 fixed처럼.`}
+],
+trap:{wrong:`"box-sizing: content-box에서 width: 100px은 화면에 100px로 표시된다."`,
+explain:`<strong>틀린 이유</strong>: content-box에서 width는 content 영역만. padding과 border가 추가로 더해집니다. padding: 10px, border: 2px이면 실제 124px이 됩니다.`}
+},
+{id:86,cat:"웹/프론트",q:"웹 접근성(Web Accessibility)의 중요성과 구현 방법을 설명하세요.",
+a:`장애를 가진 사용자도 웹을 사용할 수 있도록 보장. WCAG 2.1 4원칙: <strong>지각 가능, 운용 가능, 이해 가능, 견고함</strong>. 구현: 시맨틱 HTML, ARIA 속성, 키보드 탐색, 충분한 색상 대비(4.5:1), alt 텍스트.`,
+links:[{t:"WCAG 2.1",u:"https://www.w3.org/TR/WCAG21/"},{t:"A11y Checklist",u:"https://www.a11yproject.com/checklist/"}],
+fqs:[
+{q:"ARIA 속성은 언제 사용하고 언제 사용하지 않나요?",a:`<strong>첫 번째 규칙: 가능하면 HTML 시맨틱을 사용하라.</strong> ARIA 사용해야 할 때: 시맨틱 HTML로 표현 불가한 복잡한 위젯(탭, 모달, 슬라이더). "No ARIA is better than bad ARIA".`},
+{q:"키보드 탐색 접근성 구현 방법은?",a:`① focus 순서가 시각적 순서와 일치. tabindex="0"으로 커스텀 요소 추가. ② focus 스타일 유지. ③ 모달은 모달 내부에 포커스 가두기. ④ Escape 키로 모달/드롭다운 닫기.`}
+],
+trap:{wrong:`"alt='이미지'와 alt=''은 동일하다."`,
+explain:`<strong>완전히 다릅니다</strong>: alt="이미지"는 의미 없는 단어만 읽힙니다. alt=""는 스크린 리더에게 "장식용 이미지, 읽지 말 것" 신호. 의미 있는 이미지는 구체적인 설명이 필요합니다.`}
+},
+{id:87,cat:"웹/프론트",q:"SSR, CSR, SSG의 차이를 설명하세요.",
+a:`<strong>CSR</strong>: 브라우저에서 JS로 렌더링, 초기 로딩 느림, SPA에 적합. <strong>SSR</strong>: 서버에서 HTML 생성, 초기 빠름, SEO 유리. <strong>SSG</strong>: 빌드 타임에 HTML 생성, 가장 빠름, 동적 데이터 어려움. <strong>ISR</strong>: SSG + 주기적 재생성.`,
+links:[{t:"Rendering Patterns",u:"https://www.patterns.dev/react/rendering-introduction/"}],
+fqs:[
+{q:"Next.js App Router에서 Server Component와 Client Component의 차이는?",a:`<strong>Server Component</strong>: 서버에서만 실행, JS 번들 미포함, DB 직접 접근, useState/useEffect 불가. <strong>Client Component</strong>: 'use client', 상호작용/이벤트/브라우저 API 가능. 전략: 서버 컴포넌트 최대 사용, 상호작용 필요한 경우만 Client.`},
+{q:"Hydration Mismatch가 발생하는 이유는?",a:`서버 렌더링 HTML과 클라이언트 React 예상 HTML이 다를 때. 원인: 서버/클라이언트에서 다른 값(new Date(), 랜덤값, 브라우저 전용 API). 해결: suppressHydrationWarning, useEffect로 클라이언트 전용 렌더링 지연.`}
+],
+trap:{wrong:`"SSR을 사용하면 항상 SEO가 향상된다."`,
+explain:`<strong>조건부로 맞습니다</strong>: Google 크롤러는 CSR도 인덱싱합니다. SSR을 사용해도 느린 서버 응답, 잘못된 메타태그, 구조화 데이터 부재는 SEO에 부정적입니다.`}
+},
+{id:88,cat:"웹/프론트",q:"TypeScript의 제네릭(Generic)을 설명하고 활용 예시를 들어주세요.",
+a:`타입을 매개변수로 받아 재사용 가능한 컴포넌트를 만드는 기능. <code>function identity&lt;T&gt;(arg: T): T</code>. 활용: Array&lt;T&gt;, Promise&lt;T&gt;, 제네릭 제약(T extends Serializable), 유틸리티 타입(Partial&lt;T&gt;, Pick&lt;T,K&gt;).`,
+links:[{t:"TypeScript Generics",u:"https://www.typescriptlang.org/docs/handbook/2/generics.html"}],
+fqs:[
+{q:"TypeScript 조건부 타입과 infer 키워드를 설명하세요.",a:`<code>type ReturnType&lt;T&gt; = T extends (...args: any[]) => infer R ? R : never</code>. 함수의 반환 타입 추출. Awaited&lt;T&gt;, Parameters&lt;T&gt;도 조건부 타입으로 구현됩니다.`},
+{q:"TypeScript type과 interface의 주요 차이점은?",a:`<strong>interface</strong>: 선언 병합 가능, 객체/클래스 타입에 특화. 라이브러리 타입 확장 시 유용. <strong>type</strong>: Union, 튜플, 유틸리티 타입 조합에 더 표현력 높음. 선언 병합 불가.`}
+],
+trap:{wrong:`"TypeScript를 사용하면 런타임 에러가 발생하지 않는다."`,
+explain:`<strong>틀린 이유</strong>: TypeScript는 컴파일 타임에만 타입 체크. 런타임에는 JS로 변환되어 타입 정보가 사라집니다. any 사용, 외부 API 캐스팅에서 런타임 에러 발생 가능.`}
+},
+{id:89,cat:"웹/프론트",q:"React의 useCallback과 useMemo의 차이와 사용 시점을 설명하세요.",
+a:`<strong>useMemo</strong>: 계산 비용이 높은 값을 메모이제이션. <strong>useCallback</strong>: 함수를 메모이제이션. 자식 컴포넌트에 props로 전달할 때 불필요한 re-render 방지. 주의: 모든 곳에 적용하면 오히려 성능 저하.`,
+links:[{t:"React useMemo",u:"https://react.dev/reference/react/useMemo"}],
+fqs:[
+{q:"useCallback이 있어도 자식이 re-render될 수 있는 경우는?",a:`자식이 React.memo로 감싸져 있지 않으면 효과 없음. 또한 props에 객체 리터럴 {}나 배열 []을 직접 전달하면 새 참조로 re-render. 올바른 사용: React.memo + useCallback 함께.`},
+{q:"useMemo/useCallback 없이도 성능 문제 없는 경우는?",a:`컴포넌트가 자주 re-render되지 않을 때, 계산 비용이 낮을 때, 의존성이 자주 바뀔 때(메모이제이션 계속 무효화). 황금 법칙: Profiler로 측정 후 병목에만 적용.`}
+],
+trap:{wrong:`"useMemo와 useCallback을 많이 사용할수록 앱이 빨라진다."`,
+explain:`<strong>틀린 이유</strong>: 메모이제이션 비용(의존성 비교, 캐시 저장)이 있습니다. 계산이 충분히 비싸지 않으면 오히려 오버헤드만 추가됩니다.`}
+},
+{id:90,cat:"시스템설계",q:"마이크로서비스 아키텍처(MSA)와 모놀리식의 차이와 장단점을 설명하세요.",
+a:`<strong>모놀리식</strong>: 하나의 코드베이스, 배포 단순, 초기 개발 빠름. 규모 커지면 복잡도 증가. <strong>MSA</strong>: 기능별 독립 서비스, 독립 배포/확장, 기술 다양성. 분산 복잡성, 높은 운영 비용. 초기엔 모놀리식으로 시작, Strangler Fig 패턴으로 전환.`,
+links:[{t:"Microservices Patterns",u:"https://microservices.io/patterns/index.html"}],
+fqs:[
+{q:"MSA 전환 시 서비스 경계를 정하는 기준은?",a:`<strong>DDD의 Bounded Context</strong>가 주요 기준. 비즈니스 도메인 경계를 따라 나눔. 좋은 경계: 독립 배포 가능, 데이터 소유권 명확, 팀이 독립적 개발 가능. 잘못된 경계는 과도한 서비스 간 호출을 만듭니다.`},
+{q:"분산 추적(Distributed Tracing)이 필요한 이유는?",a:`단일 요청이 여러 서비스를 거칠 때 문제 위치 파악이 어렵습니다. 고유 Trace ID를 부여하고 각 서비스마다 Span을 추가. Jaeger, Zipkin, AWS X-Ray. OpenTelemetry가 표준 계측 프레임워크.`}
+],
+trap:{wrong:`"MSA는 항상 모놀리식보다 좋다."`,
+explain:`<strong>틀린 이유</strong>: 소규모 팀에서 MSA는 운영 부담으로 개발 속도가 오히려 느려집니다. Shopify는 여전히 Rails 모놀리식으로 수십억 달러 매출을 처리합니다.`}
+},
+{id:91,cat:"시스템설계",q:"메시지 큐의 역할과 Kafka vs RabbitMQ 차이를 설명하세요.",
+a:`서비스 간 <strong>비동기 통신, 트래픽 완충, 시스템 분리</strong>에 사용. <strong>RabbitMQ</strong>: 복잡한 라우팅, 메시지 즉시 삭제, 낮은 지연. <strong>Kafka</strong>: 분산 로그 스트리밍, 메시지 영구 저장, 높은 처리량, 이벤트 소싱에 적합.`,
+links:[{t:"Kafka vs RabbitMQ",u:"https://www.cloudamqp.com/blog/when-to-use-rabbitmq-or-apache-kafka.html"}],
+fqs:[
+{q:"Kafka의 Consumer Group과 Partition의 병렬 처리 방식은?",a:`<strong>Partition</strong>: 토픽이 여러 파티션으로 분할, 파티션 내 순서 보장. <strong>Consumer Group</strong>: 같은 그룹의 Consumer들이 파티션을 나눠 처리. Consumer 수 ≤ Partition 수일 때 최대 병렬성. Consumer 추가로 처리량 선형 증가.`},
+{q:"At-Least-Once, At-Most-Once, Exactly-Once의 차이는?",a:`<strong>At-Most-Once</strong>: 손실 가능, 속도 우선. <strong>At-Least-Once</strong>: 중복 가능, 가장 일반적. <strong>Exactly-Once</strong>: 완전한 정확성, 복잡하고 성능 오버헤드. 실무는 At-Least-Once + 멱등 Consumer가 현실적.`}
+],
+trap:{wrong:`"메시지 큐를 사용하면 메시지가 절대 손실되지 않는다."`,
+explain:`<strong>구성에 따라 다릅니다</strong>: 기본 설정으로는 손실 가능. Producer acks 설정, 복제 팩터, DLQ(Dead Letter Queue) 설정이 필요합니다.`}
+},
+{id:92,cat:"시스템설계",q:"API 게이트웨이(API Gateway)의 역할과 기능을 설명하세요.",
+a:`클라이언트와 마이크로서비스 사이의 단일 진입점. 주요 기능: <strong>인증/인가, Rate Limiting, 로드 밸런싱, 로깅, SSL 종료, 라우팅, API 버전 관리, 회로 차단기</strong>. AWS API Gateway, Kong, NGINX가 대표적.`,
+links:[{t:"API Gateway Pattern",u:"https://microservices.io/patterns/apigateway.html"}],
+fqs:[
+{q:"API Gateway와 Service Mesh(Istio)의 차이는?",a:`<strong>API Gateway</strong>: 북-남 트래픽, 외부→내부 진입점, API 관리. <strong>Service Mesh</strong>: 동-서 트래픽, 내부 서비스 간 통신, mTLS/분산 추적을 코드 변경 없이 구현. 보통 함께 사용합니다.`},
+{q:"BFF(Backend For Frontend) 패턴이 필요한 상황은?",a:`모바일과 웹의 데이터 요구사항이 다를 때. 각 클라이언트에 맞는 별도 게이트웨이 레이어를 만듭니다. GraphQL이 BFF의 한 형태로, 클라이언트가 필요한 데이터만 선택적 요청.`}
+],
+trap:{wrong:`"API Gateway를 사용하면 마이크로서비스의 모든 보안 문제가 해결된다."`,
+explain:`<strong>틀린 이유</strong>: API Gateway는 외부 요청의 인증/인가만 처리합니다. 내부 서비스 간 통신 보안은 Service Mesh(mTLS)가 담당합니다. 심층 방어가 필요합니다.`}
+},
+{id:93,cat:"시스템설계",q:"CAP 정리(CAP Theorem)를 설명하고 실제 시스템 사례를 들어주세요.",
+a:`분산 시스템에서 <strong>일관성(C), 가용성(A), 분할 허용성(P)</strong> 세 가지를 동시에 보장 불가. P는 포기 불가하므로 <strong>CP vs AP</strong> 선택. <strong>CP</strong>: HBase, ZooKeeper - 금융. <strong>AP</strong>: Cassandra, DynamoDB - SNS.`,
+links:[{t:"CAP Theorem",u:"https://www.ibm.com/topics/cap-theorem"}],
+fqs:[
+{q:"CAP 정리의 한계와 더 유용한 프레임워크는?",a:`CAP는 파티션 발생 시만 적용됩니다. <strong>PACELC</strong>: 정상 상태에서 Latency vs Consistency 트레이드오프도 고려합니다. 실제 시스템(Cassandra, DynamoDB)은 연산마다 일관성 수준을 조정 가능합니다.`},
+{q:"Eventual Consistency와 Strong Consistency의 실제 사례는?",a:`<strong>Strong Consistency</strong>: 금융 거래, 재고 관리. <strong>Eventual Consistency</strong>: SNS 좋아요 수, 조회수, DNS. 약간의 불일치 허용 대신 높은 가용성과 성능.`}
+],
+trap:{wrong:`"분산 데이터베이스는 절대 일관성과 가용성을 동시에 제공할 수 없다."`,
+explain:`<strong>파티션이 없을 때는 동시에 가능합니다</strong>: CAP는 네트워크 파티션 발생 시에만 C와 A 중 선택이 강제됩니다. 정상 운영 중에는 두 가지 모두 제공 가능합니다.`}
+},
+
+{id:94,cat:"시스템설계",q:"Rate Limiting 알고리즘의 종류와 구현 방법을 설명하세요.",
+a:`<strong>Token Bucket</strong>: 토큰이 있을 때만 요청 허용, 버스트 허용. <strong>Leaky Bucket</strong>: 일정 속도로만 요청 처리, 균일한 출력. <strong>Fixed Window</strong>: 시간 창 내 고정 개수, 경계 버스트 문제. <strong>Sliding Window Log/Counter</strong>: 더 정확하지만 메모리 사용 많음. Redis로 분산 환경에서 구현.`,
+links:[{t:"Rate Limiting Algorithms",u:"https://blog.cloudflare.com/counting-things-a-lot-of-different-things/"},{t:"System Design Rate Limiting",u:"https://bytebytego.com/courses/system-design-interview/design-a-rate-limiter"}],
+fqs:[
+{q:"Redis를 이용한 Token Bucket Rate Limiting 구현 방법을 설명하세요.",a:`Redis의 <strong>Lua 스크립트</strong>로 원자적 실행을 보장합니다. 키: <code>rate_limit:{user_id}</code>. 값: 현재 토큰 수. <code>GET</code>으로 토큰 수 확인 → 충분하면 <code>DECRBY</code> → 부족하면 429 반환. 주기적으로 토큰 보충: <code>INCR</code> + <code>EXPIRE</code>. 또는 마지막 요청 시간과 토큰 수를 함께 저장해 계산. Lua 스크립트가 INCR → EXPIRE의 원자성을 보장합니다. Redis Cluster 환경에서는 같은 사용자의 요청이 같은 노드로 가도록 해싱이 필요합니다.`},
+{q:"분산 환경에서 Rate Limiting을 정확하게 구현하기 어려운 이유는?",a:`여러 서버가 있을 때 각 서버가 로컬로 Rate Limiting을 하면 실제 허용량이 서버 수배가 됩니다(예: 3서버 × 100/초 = 300/초 실제 허용). <strong>해결</strong>: ① 중앙 저장소(Redis)로 카운터 공유. ② 단점: Redis 장애 시 Rate Limiting 불가 또는 모든 요청 차단. ③ 경쟁 조건(Race Condition): 두 서버가 동시에 카운터를 읽고 업데이트하면 초과 허용이 발생. Lua 스크립트 또는 Redis 트랜잭션(WATCH+MULTI+EXEC)으로 원자성 보장이 필요합니다.`}
+],
+trap:{wrong:`"Fixed Window 카운터는 구현이 단순하고 정확도도 높아 모든 Rate Limiting에 적합하다."`,
+explain:`<strong>정확도 문제가 있습니다</strong>: 창 경계에서 버스트가 발생합니다. 분당 100건 제한에서 59초에 100건, 61초(새 창)에 100건을 보내면 2초 만에 200건이 처리됩니다. Sliding Window 방식이 더 정확하지만 메모리와 계산 비용이 더 높습니다. 요구사항에 따라 선택합니다: 단순한 보호가 목적이면 Fixed Window, 정밀한 제어가 필요하면 Sliding Window Log나 Token Bucket을 사용합니다.`}
+},
+{id:95,cat:"시스템설계",q:"분산 캐시 설계 시 고려해야 할 사항들을 설명하세요.",
+a:`<strong>캐시 적중률</strong>(Hit Rate), <strong>만료 정책</strong>(TTL), <strong>일관성</strong>(캐시-DB 동기화), <strong>Eviction</strong>(LRU/LFU), <strong>캐시 스탬피드</strong> 방지, <strong>핫 키</strong>(Hot Key) 문제. 계층적 캐시(L1 로컬 + L2 분산). Read-Through, Write-Through, Write-Back 전략 선택.`,
+links:[{t:"Redis Best Practices",u:"https://redis.io/docs/manual/patterns/"},{t:"Distributed Caching",u:"https://aws.amazon.com/caching/best-practices/"}],
+fqs:[
+{q:"핫 키(Hot Key) 문제란 무엇이고 어떻게 해결하나요?",a:`특정 키에 요청이 집중되어(예: 유명인의 프로필, 인기 상품) 해당 Redis 노드에 과부하가 생기는 현상입니다. <strong>해결 방법</strong>: ① <strong>로컬 캐시(In-Process Cache)</strong>: 각 서버 메모리에 가장 인기 있는 데이터를 캐싱. Redis 요청 자체를 줄임. ② <strong>키 복제(Key Replication)</strong>: 핫 키를 여러 복사본으로 분산 (user:123:1, user:123:2...). ③ <strong>읽기 복제본</strong>: Redis Replica로 읽기 분산. ④ Consistent Hashing으로 균등 분산.`},
+{q:"캐시 히트율을 높이기 위한 전략은?",a:`<strong>캐싱 후보 선정</strong>: 자주 읽히고 드물게 변경되며 생성 비용이 높은 데이터. <strong>적절한 TTL</strong>: 데이터 갱신 주기와 일치시킵니다. 너무 짧으면 캐시 의미 없음, 너무 길면 오래된 데이터. <strong>캐시 예열(Cache Warming)</strong>: 서버 시작 시 자주 접근되는 데이터를 미리 캐시에 로드. <strong>세그먼테이션</strong>: 사용자별/지역별로 캐시를 분리해 관련 없는 데이터로 Eviction 방지. 캐시 히트율을 모니터링하고 낮은 키는 제거합니다.`}
+],
+trap:{wrong:`"캐시를 추가하면 항상 시스템 성능이 향상된다."`,
+explain:`<strong>항상 그렇지 않습니다</strong>: 캐시 미스가 많으면 캐시가 없는 것보다 오히려 느립니다(캐시 조회 + DB 조회). 데이터가 자주 바뀌면 캐시 무효화 비용이 발생합니다. 쓰기 중심 시스템에서는 캐시가 도움이 안 됩니다. 캐시 서버 자체가 장애 포인트가 됩니다. <strong>올바른 접근</strong>: 읽기/쓰기 비율, 데이터 변경 빈도, 응답 시간 요구사항을 분석한 후 캐시 도입을 결정합니다.`}
+},
+{id:96,cat:"시스템설계",q:"서킷 브레이커(Circuit Breaker) 패턴을 설명하세요.",
+a:`마이크로서비스에서 연속 실패 시 요청을 차단해 <strong>Cascade Failure(연쇄 장애)</strong>를 방지. 세 가지 상태: <strong>Closed</strong>(정상), <strong>Open</strong>(차단, 빠른 실패), <strong>Half-Open</strong>(일부 요청으로 복구 확인). Resilience4j, Hystrix, Sentinel이 대표적. Timeout + Retry + Fallback과 함께 사용.`,
+links:[{t:"Circuit Breaker Pattern",u:"https://microservices.io/patterns/reliability/circuit-breaker.html"},{t:"Resilience4j Docs",u:"https://resilience4j.readme.io/docs/circuitbreaker"}],
+fqs:[
+{q:"서킷 브레이커의 세 가지 상태 전환 조건을 구체적으로 설명하세요.",a:`<strong>Closed → Open</strong>: 설정된 시간 내 실패율이 임계값(예: 50% 초과, 최소 20건)을 넘으면 전환. 이후 요청은 즉시 예외 반환(Fast Fail). <strong>Open → Half-Open</strong>: 대기 시간(예: 30초) 후 자동 전환. 일부 요청(예: 10%)을 실제 서비스로 전달해 복구 여부 확인. <strong>Half-Open → Closed</strong>: 프로브 요청이 성공하면 정상 상태로 복귀. <strong>Half-Open → Open</strong>: 프로브 요청이 실패하면 다시 Open으로 전환.`},
+{q:"Fallback이 서킷 브레이커와 함께 사용되어야 하는 이유는?",a:`서킷 브레이커 Open 상태에서 요청을 차단하면 클라이언트는 에러를 받습니다. Fallback은 <strong>서비스 저하(Degraded Mode)</strong>로 대응합니다. 예: 추천 서비스 장애 시 기본 추천 목록 반환, 재고 서비스 장애 시 캐시된 재고 정보 사용, 결제 서비스 장애 시 "잠시 후 다시 시도" 안내. Fallback이 없으면 사용자가 에러만 보게 됩니다. Netflix의 Hystrix가 Fallback을 서킷 브레이커와 통합해 널리 알린 패턴입니다.`}
+],
+trap:{wrong:`"서킷 브레이커를 모든 서비스 호출에 적용하면 시스템이 더 안정적이 된다."`,
+explain:`<strong>과도한 적용은 문제를 만듭니다</strong>: 임계값과 타임아웃 설정이 잘못되면 정상 서비스를 차단할 수 있습니다. 간헐적 네트워크 지연에도 서킷이 열릴 수 있습니다. 불필요한 서킷 브레이커는 복잡도만 늘립니다. <strong>적합한 곳</strong>: 외부 서비스 호출, 느린 DB 쿼리, 타사 API 연동처럼 실패할 가능성이 있고 연쇄 장애가 우려되는 곳에 선택적으로 적용합니다.`}
+},
+{id:97,cat:"시스템설계",q:"URL 단축 서비스(bit.ly) 설계 방법을 설명하세요.",
+a:`<strong>해시 생성</strong>: MD5/SHA-1 + Base62(a-z, A-Z, 0-9) 인코딩. 7자리 = 62^7 = 3.5조 URL. <strong>저장</strong>: key-value DB(Redis/DynamoDB). <strong>리다이렉트</strong>: HTTP 301(영구) vs 302(임시). <strong>충돌 처리</strong>: 충돌 시 카운터나 난수 추가. Custom URL, 만료, 통계 분석은 추가 기능.`,
+links:[{t:"URL Shortener System Design",u:"https://bytebytego.com/courses/system-design-interview/design-a-url-shortener"}],
+fqs:[
+{q:"301 Redirect와 302 Redirect 중 URL 단축 서비스에서 어느 것이 더 적합한가요?",a:`<strong>301(Permanent)</strong>: 브라우저가 캐싱해 다음 방문 시 서버를 거치지 않음. 서버 부하 감소, 빠름. 하지만 URL 방문 통계를 수집할 수 없음. <strong>302(Temporary)</strong>: 브라우저가 캐싱하지 않아 매번 서버를 거침. 클릭 통계, A/B 테스트, URL 대상 변경이 가능. <strong>선택 기준</strong>: 통계가 중요하면 302, 성능이 중요하고 통계가 필요 없으면 301. bit.ly 같은 서비스는 클릭 분석이 핵심 가치이므로 302를 사용합니다.`},
+{q:"URL 단축 시 Base62 인코딩 대신 랜덤 UUID를 사용하면 어떤 문제가 있나요?",a:`<strong>UUID의 문제</strong>: UUID(128비트)는 너무 길어 URL에 부적합합니다. UUID는 비연속적인 랜덤값이라 B-Tree 인덱스에서 페이지 분할이 자주 발생해 <strong>쓰기 성능이 저하</strong>됩니다. Base62로 변환된 7자리 코드가 훨씬 짧고 가독성이 좋습니다. <strong>보안 고려</strong>: 순차 ID를 사용하면 URL을 쉽게 열거할 수 있어 보안 위험. 따라서 충분한 엔트로피를 가진 랜덤 Base62를 생성하거나, 순차 ID에 HMAC을 적용하는 방법을 사용합니다.`}
+],
+trap:{wrong:`"URL 단축 서비스에서 해시 충돌은 거의 불가능하므로 충돌 처리가 필요 없다."`,
+explain:`<strong>틀린 이유</strong>: 7자리 Base62는 3.5조 개 조합이 가능하지만, 생일 문제(Birthday Problem)에 의해 <strong>약 100만 개</strong>의 URL이 저장되면 충돌 확률이 0.01% 이상으로 올라갑니다. bit.ly 같은 서비스는 수십억 개의 URL을 처리하므로 충돌이 반드시 발생합니다. 충돌 처리는 필수입니다: 충돌 감지(DB에서 키 존재 확인) → 충돌 시 카운터/난수를 추가해 재시도하거나 Bloom Filter로 사전 체크합니다.`}
+},
+{id:98,cat:"시스템설계",q:"실시간 채팅 시스템을 설계하는 방법을 설명하세요.",
+a:`<strong>연결</strong>: WebSocket(양방향). <strong>메시지 저장</strong>: Cassandra(쓰기 최적화, 시계열). <strong>전달</strong>: Redis Pub/Sub 또는 Kafka. <strong>서비스</strong>: Connection, Chat, Presence, Notification 서비스 분리. <strong>확장</strong>: WebSocket 서버 수평 확장 + Redis로 서버 간 메시지 라우팅.`,
+links:[{t:"Chat System Design",u:"https://bytebytego.com/courses/system-design-interview/design-a-chat-system"},{t:"Slack Architecture",u:"https://slack.engineering/flannel-an-application-level-edge-cache-to-make-slack-scale/"}],
+fqs:[
+{q:"채팅 시스템에서 메시지 순서를 보장하는 방법은?",a:`클라이언트 타임스탬프는 신뢰할 수 없습니다(기기 시간 불일치). <strong>해결</strong>: ① <strong>서버 타임스탬프</strong>: 서버가 수신 시간을 기록. 단, 분산 서버 간 시간 동기화 필요(NTP). ② <strong>Sequence Number</strong>: 각 채팅방에 단조 증가하는 시퀀스 번호 할당. Snowflake ID(Twitter)처럼 분산 환경에서 시간+서버ID+시퀀스로 구성. ③ <strong>인과관계 시계(Lamport Clock)</strong>: 분산 이벤트 순서 보장. 메시지 순서 보장은 채팅 UX에 핵심입니다.`},
+{q:"오프라인 사용자에게 메시지를 전달하는 방법은?",a:`WebSocket 연결이 없는 오프라인 사용자에게는 다른 방법으로 전달합니다. ① <strong>Push Notification</strong>: APNS(iOS), FCM(Android)으로 기기에 푸시. ② <strong>DB에 저장 후 재연결 시 전달</strong>: 사용자가 접속하면 마지막 확인 이후 메시지를 가져옵니다. ③ <strong>읽지 않은 메시지 카운터</strong>: 아이콘에 배지로 표시. Cursor/Last Read 위치를 각 사용자-채팅방 조합으로 저장합니다.`}
+],
+trap:{wrong:`"채팅 시스템에서 Kafka를 사용하면 메시지 순서가 자동으로 보장된다."`,
+explain:`<strong>조건부로만 맞습니다</strong>: Kafka는 <strong>파티션 내에서만 순서를 보장</strong>합니다. 같은 채팅방의 메시지를 같은 파티션으로 라우팅(채팅방 ID를 파티션 키로)하면 해당 채팅방 내 순서가 보장됩니다. 하지만 여러 파티션에 걸쳐 있는 메시지들의 전역 순서는 보장되지 않습니다. 또한 Consumer 처리 순서가 Kafka 순서와 다를 수 있어 최종적으로 메시지 ID/타임스탬프로 정렬이 필요합니다.`}
+},
+{id:99,cat:"시스템설계",q:"검색 자동완성(Autocomplete) 시스템을 설계하는 방법을 설명하세요.",
+a:`<strong>트라이(Trie) + 탑K</strong>: 각 노드에 상위 K개 검색어 캐싱. <strong>대규모 처리</strong>: MapReduce로 검색 빈도 집계 → 트라이 빌드. <strong>CDN 캐싱</strong>: 인기 접두사 응답. <strong>Redis</strong>: Sorted Set으로 접두사별 빈도순 검색어 관리. 주기적 오프라인 배치로 트라이 재구성. 실시간성보다 성능이 중요.`,
+links:[{t:"Typeahead Design",u:"https://bytebytego.com/courses/system-design-interview/design-a-search-autocomplete-system"}],
+fqs:[
+{q:"Redis Sorted Set으로 자동완성을 구현하는 방법을 설명하세요.",a:`검색어의 각 접두사를 키로 Sorted Set을 만들고, 검색 빈도를 score로 저장합니다. 예: "자바" 검색 시 → "자", "자바" 키의 Sorted Set에 score 증가. 자동완성 쿼리: <code>ZREVRANGE autocomplete:자바 0 9</code>로 상위 10개 반환. <strong>문제</strong>: 모든 접두사에 대해 키가 생성되어 메모리 사용이 많습니다. <strong>최적화</strong>: 자주 검색되는 접두사만 캐싱, TTL 설정. Trie보다 구현이 간단하고 클러스터로 수평 확장이 쉽습니다.`},
+{q:"자동완성에서 개인화(Personalization)를 추가하는 방법은?",a:`전역 인기 검색어 + 개인 검색 이력을 결합합니다. <strong>접근 방법</strong>: ① 사용자별 검색 이력을 별도 저장. ② 자동완성 결과 = 전역 결과 × 전역 가중치 + 개인 결과 × 개인 가중치. ③ 최근 검색(Last N Searches)을 클라이언트 로컬에 저장해 서버 부하 없이 제공. <strong>주의사항</strong>: 개인화 데이터는 사용자 인증 후에만 제공, GDPR 등 프라이버시 규정 준수 필요. Google은 사용자 검색 이력과 위치를 반영한 개인화된 자동완성을 제공합니다.`}
+],
+trap:{wrong:`"트라이는 자동완성의 유일한 최적 자료구조이므로 모든 자동완성 시스템에서 트라이를 사용해야 한다."`,
+explain:`<strong>틀린 이유</strong>: 트라이는 단일 서버에서 효율적이지만 분산 환경에서 전체 트라이를 공유하기 어렵습니다. 실제 대규모 시스템은 <strong>Redis Sorted Set, Elasticsearch, 전용 검색 서버(Algolia)</strong> 등을 조합합니다. Google의 자동완성은 트라이 기반이 아니라 역 인덱스와 ML 모델을 사용합니다. 요구사항(규모, 실시간성, 개인화)에 맞는 자료구조를 선택해야 합니다.`}
+},
+{id:100,cat:"시스템설계",q:"유튜브 같은 비디오 스트리밍 서비스를 설계하는 방법을 설명하세요.",
+a:`<strong>업로드</strong>: Object Storage(S3) + 비동기 인코딩(다양한 해상도). <strong>스트리밍</strong>: HLS/DASH 프로토콜, CDN 배포. <strong>추천</strong>: 협업 필터링 ML 모델. <strong>메타데이터</strong>: RDS(영상 정보) + Elasticsearch(검색). <strong>조회수</strong>: 카운터 서비스(배치 업데이트로 DB 부하 감소). DAU 100만 기준으로 설계 시작.`,
+links:[{t:"YouTube System Design",u:"https://bytebytego.com/courses/system-design-interview/design-youtube"},{t:"Netflix Tech Blog",u:"https://netflixtechblog.com/"}],
+fqs:[
+{q:"비디오 트랜스코딩 파이프라인의 비동기 처리 이유와 설계를 설명하세요.",a:`원본 비디오 업로드(수 GB)와 인코딩(수 분 ~ 수 시간)은 동기 처리 시 사용자가 오랫동안 기다려야 합니다. <strong>비동기 파이프라인</strong>: ① 원본을 S3에 업로드 → ② 업로드 완료 이벤트를 메시지 큐에 발행 → ③ 트랜스코더 워커가 240p, 360p, 720p, 1080p, 4K 등 다양한 해상도로 병렬 인코딩 → ④ 완료 시 메타데이터 DB 업데이트 + 알림 → ⑤ CDN에 배포. 실패 시 재시도 가능하고, 트랜스코더를 독립적으로 확장할 수 있습니다.`},
+{q:"HLS(HTTP Live Streaming)가 어떻게 동작하는지 설명하세요.",a:`<strong>HLS</strong>는 Apple이 개발한 HTTP 기반 스트리밍 프로토콜입니다. 비디오를 작은 세그먼트(2~10초) 파일(<code>.ts</code>)로 분할하고 <strong>플레이리스트 파일(<code>.m3u8</code>)</strong>이 세그먼트 목록을 기술합니다. 클라이언트가 m3u8을 읽고 세그먼트를 순서대로 다운로드합니다. <strong>ABR(Adaptive Bitrate)</strong>: 네트워크 상태에 따라 자동으로 품질을 변경. 같은 콘텐츠의 여러 품질 버전이 있고 Master Playlist가 이를 나열합니다. CDN이 정적 파일처럼 세그먼트를 캐싱해 확장성이 높습니다.`}
+],
+trap:{wrong:`"비디오 스트리밍에서 TCP를 사용하면 안 된다. 실시간 스트리밍에는 항상 UDP가 더 좋다."`,
+explain:`<strong>틀린 이유</strong>: Netflix, YouTube, Twitch는 모두 <strong>HTTP(TCP) 기반 스트리밍(HLS/DASH)</strong>을 사용합니다. CDN 인프라가 HTTP 최적화가 잘 되어 있고, 방화벽을 통과하기 쉬우며, ABR(적응형 비트레이트)로 패킷 손실을 처리합니다. UDP/RTP는 초저지연이 필요한 <strong>라이브 비디오 통화</strong>(WebRTC, Zoom, Google Meet)에 사용됩니다. VOD나 라이브 스트리밍의 수 초 지연은 TCP로 충분히 처리됩니다.`}
+}
+];
+

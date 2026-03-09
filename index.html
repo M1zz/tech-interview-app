@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기술 면접 훈련 100 | 암기가 아닌 이해를</title>
+  <meta name="description" content="100개의 기술 면접 질문을 5단계 이해 검증 시스템으로 훈련하세요. 백지 소환 → 모범답안 → 자가 판정 → 꼬리 질문 → 오개념 찾기">
+  <!-- 테마 깜빡임 방지: 스크립트를 head 최상단에 인라인으로 실행 -->
+  <script>
+    (function() {
+      var t = localStorage.getItem('ti_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <div class="logo">// TECH INTERVIEW × 100</div>
+  <div class="progress-wrap">
+    <div class="progress-text"><span id="masteredCount">0</span> / 100 이해 완료</div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat mastered">
+      <div class="hstat-num" id="statMastered">0</div>
+      <div class="hstat-label">이해</div>
+    </div>
+    <div class="hstat partial">
+      <div class="hstat-num" id="statPartial">0</div>
+      <div class="hstat-label">부분</div>
+    </div>
+    <div class="hstat unknown">
+      <div class="hstat-num" id="statUnknown">0</div>
+      <div class="hstat-label">모름</div>
+    </div>
+  </div>
+  <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="다크/라이트 모드 전환">🌙</button>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <h1>암기가 아닌 <em>이해</em>를 위한<br>기술 면접 훈련 100</h1>
+  <p>답을 먼저 써보고, 꼬리 질문에 답하고, 오개념을 찾아야만 넘어갈 수 있어요.<br>진짜 이해했는지 직접 확인하는 5단계 훈련입니다.</p>
+  <div class="flow-steps">
+    <div class="flow-step"><span class="num">01</span> 백지 소환</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><span class="num">02</span> 모범답안 확인</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><span class="num">03</span> 자가 판정</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><span class="num">04</span> 꼬리 질문</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><span class="num">05</span> 오개념 찾기</div>
+  </div>
+</section>
+
+<!-- ── FILTERS ── -->
+<div class="filters">
+  <div class="filters-inner">
+    <input type="text" class="search-input" id="searchInput" placeholder="🔍 질문 검색...">
+    <button class="filter-btn active" data-filter="all">전체</button>
+    <button class="filter-btn" data-filter="알고리즘">알고리즘</button>
+    <button class="filter-btn" data-filter="자료구조">자료구조</button>
+    <button class="filter-btn" data-filter="데이터베이스">DB</button>
+    <button class="filter-btn" data-filter="네트워크">네트워크</button>
+    <button class="filter-btn" data-filter="운영체제">OS</button>
+    <button class="filter-btn" data-filter="OOP/패턴">OOP/패턴</button>
+    <button class="filter-btn" data-filter="웹/프론트">웹/프론트</button>
+    <button class="filter-btn" data-filter="시스템설계">시스템설계</button>
+    <button class="filter-btn" data-filter="status-unknown">😵 모름</button>
+    <button class="filter-btn" data-filter="status-mastered">💡 이해</button>
+  </div>
+</div>
+
+<!-- ── QUESTIONS ── -->
+<main class="main">
+  <div class="results-info" id="resultsInfo">로딩 중...</div>
+  <div class="questions-list" id="questionsList"></div>
+  <div class="empty-state" id="emptyState" style="display:none">검색 결과가 없어요 🔍</div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- 데이터 → 로직 순서 중요 -->
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

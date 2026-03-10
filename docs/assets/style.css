@@ -132,6 +132,11 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .reveal-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:opacity .15s,transform .1s}
 .reveal-btn:hover{opacity:.85;transform:translateY(-1px)}
 
+/* recall done state */
+.recall-section.recall-done .recall-prompt,
+.recall-section.recall-done .recall-textarea{opacity:.45;pointer-events:none}
+.recall-section.recall-done .reveal-btn{display:none}
+
 /* answer */
 .answer-text{font-size:13px;line-height:1.8;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px}
 .answer-text strong{color:var(--accent);font-weight:700}

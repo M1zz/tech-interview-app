@@ -40,7 +40,7 @@ function buildCard(q) {
     </div>
   </div>
   <div class="q-body">
-    <div class="stage-section">
+    <div class="stage-section recall-section" id="recall-section-${q.id}">
       <div class="stage-label">01 · 백지 소환</div>
       <div class="recall-prompt">모범답안을 보기 전에 지금 알고 있는 것을 직접 써보세요. 빈칸이어도 괜찮아요.</div>
       <textarea class="recall-textarea" id="recall-${q.id}" placeholder="여기에 설명을 작성하세요..." rows="4"></textarea>
@@ -88,6 +88,7 @@ function toggleCard(id) {
   if (opening) {
     const st = getStatus(id);
     if (st) {
+      document.getElementById(`recall-section-${id}`)?.classList.add('recall-done');
       ['answer', 'assess', 'followups', 'trap'].forEach(s =>
         document.getElementById(`${s}-${id}`)?.classList.remove('hidden'));
       document.querySelector(`#assess-${id} .assess-btn.${st}`)?.classList.add('selected');
@@ -96,8 +97,15 @@ function toggleCard(id) {
 }
 
 function revealAnswer(id) {
+  // 백지 소환 섹션 접기
+  const recallSection = document.getElementById(`recall-section-${id}`);
+  if (recallSection) recallSection.classList.add('recall-done');
   ['answer', 'assess', 'followups', 'trap'].forEach(s =>
     document.getElementById(`${s}-${id}`)?.classList.remove('hidden'));
+  // 모범답안 섹션으로 스크롤
+  setTimeout(() => {
+    document.getElementById(`answer-${id}`)?.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }, 50);
 }
 
 function assess(id, status) {

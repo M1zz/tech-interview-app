@@ -20,7 +20,7 @@
 <header class="header">
   <div class="logo">// TECH INTERVIEW × 100</div>
   <div class="progress-wrap">
-    <div class="progress-text"><span id="masteredCount">0</span> / 100 이해 완료</div>
+    <div class="progress-text" id="progressText"><span id="masteredCount">0</span> / 100 이해 완료</div>
     <div class="progress-bar-bg">
       <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
     </div>
@@ -39,6 +39,7 @@
       <div class="hstat-label">모름</div>
     </div>
   </div>
+  <button class="lang-toggle" id="langBtn" onclick="window.location.href='en.html'" title="Switch to English">EN</button>
   <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="다크/라이트 모드 전환">🌙</button>
 </header>
 
@@ -64,14 +65,14 @@
   <div class="filters-inner">
     <input type="text" class="search-input" id="searchInput" placeholder="🔍 질문 검색...">
     <button class="filter-btn active" data-filter="all">전체</button>
-    <button class="filter-btn" data-filter="알고리즘">알고리즘</button>
-    <button class="filter-btn" data-filter="자료구조">자료구조</button>
-    <button class="filter-btn" data-filter="데이터베이스">DB</button>
-    <button class="filter-btn" data-filter="네트워크">네트워크</button>
-    <button class="filter-btn" data-filter="운영체제">OS</button>
-    <button class="filter-btn" data-filter="OOP/패턴">OOP/패턴</button>
-    <button class="filter-btn" data-filter="웹/프론트">웹/프론트</button>
-    <button class="filter-btn" data-filter="시스템설계">시스템설계</button>
+    <button class="filter-btn" data-filter="cat-0">알고리즘</button>
+    <button class="filter-btn" data-filter="cat-1">자료구조</button>
+    <button class="filter-btn" data-filter="cat-2">DB</button>
+    <button class="filter-btn" data-filter="cat-3">네트워크</button>
+    <button class="filter-btn" data-filter="cat-4">OS</button>
+    <button class="filter-btn" data-filter="cat-5">OOP/패턴</button>
+    <button class="filter-btn" data-filter="cat-6">웹/프론트</button>
+    <button class="filter-btn" data-filter="cat-7">시스템설계</button>
     <button class="filter-btn" data-filter="status-unknown">😵 모름</button>
     <button class="filter-btn" data-filter="status-mastered">💡 이해</button>
   </div>
@@ -88,6 +89,7 @@
 
 <!-- 데이터 → 로직 순서 중요 -->
 <script src="assets/data.js"></script>
+<script src="assets/data-en.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

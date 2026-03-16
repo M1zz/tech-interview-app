@@ -1,4 +1,4 @@
-const QUESTIONS = [
+const QUESTIONS_KO = [
 {id:1,cat:"알고리즘",q:"시간 복잡도(Time Complexity)와 공간 복잡도(Space Complexity)란 무엇인가요?",
 a:`<strong>시간 복잡도</strong>는 입력 크기 n에 따라 알고리즘 수행 시간이 얼마나 증가하는지 나타냅니다. <strong>공간 복잡도</strong>는 알고리즘 수행에 필요한 메모리 사용량입니다. 둘 다 <code>Big-O 표기법</code>으로 표현하며, 최선(Ω), 평균(Θ), 최악(O)으로 분석합니다. 예: 이진 탐색은 시간 <code>O(log n)</code>, 공간 <code>O(1)</code>입니다.`,
 links:[{t:"Big-O Cheat Sheet",u:"https://www.bigocheatsheet.com"},{t:"Visualgo",u:"https://visualgo.net/ko"}],

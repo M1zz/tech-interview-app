@@ -118,7 +118,7 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .q-card.open>.q-body{display:block}
 
 /* STAGES */
-.stage-section{padding:20px 20px 0}
+.stage-section{padding:20px 20px 20px}
 .stage-section:last-child{padding-bottom:22px}
 .stage-section+.stage-section{border-top:1px solid var(--border)}
 .stage-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}

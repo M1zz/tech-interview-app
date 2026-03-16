@@ -10,6 +10,8 @@
     (function() {
       var t = localStorage.getItem('ti_theme') || 'light';
       document.documentElement.setAttribute('data-theme', t);
+      // Force Korean language
+      localStorage.setItem('ti_lang', 'ko');
     })();
   </script>
   <link rel="stylesheet" href="assets/style.css">

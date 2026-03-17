@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct TechInterview100App: App {
@@ -6,5 +7,6 @@ struct TechInterview100App: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: QuestionRecord.self)
     }
 }

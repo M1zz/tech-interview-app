@@ -15,7 +15,9 @@
 		779E19210A9E4981F46ED536 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8168C1521BCDA4CB922C3DF /* AppState.swift */; };
 		79DEC4480BD6DD83E2490758 /* QuestionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11F97D8EB4C8ED6F91470682 /* QuestionDetailView.swift */; };
 		8C530589D582448A56948752 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B9DC15B2251BEE6D879680D /* Assets.xcassets */; };
+		9F50E77891884F5B19745F86 /* QuestionRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30B9E5D2D9E08B1AAAE5B993 /* QuestionRecord.swift */; };
 		B25D5D2D7A563066FE0BDA35 /* HTMLText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B63780D1FCD18574F155FC /* HTMLText.swift */; };
+		B3F92AE9B4B8A635DBBD764D /* PDFGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2751E0380B17F5B10095AB /* PDFGenerator.swift */; };
 		BAAEDD29188EF663C6C77BFA /* FilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8C886750FB8BC8469F86D2 /* FilterBarView.swift */; };
 		BCC75D83BCD8C26FDC4687D5 /* StatsHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48539B0E515B0A56C29DA2CE /* StatsHeaderView.swift */; };
 		F814FC331CF2191E667EF490 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B4485A003A9F87E354C970 /* ContentView.swift */; };
@@ -28,7 +30,9 @@
 		11F97D8EB4C8ED6F91470682 /* QuestionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionDetailView.swift; sourceTree = "<group>"; };
 		1D8C886750FB8BC8469F86D2 /* FilterBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterBarView.swift; sourceTree = "<group>"; };
 		25857CEDE62C86B1593F3E2B /* QuestionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionListView.swift; sourceTree = "<group>"; };
+		30B9E5D2D9E08B1AAAE5B993 /* QuestionRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionRecord.swift; sourceTree = "<group>"; };
 		3B9DC15B2251BEE6D879680D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3E2751E0380B17F5B10095AB /* PDFGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFGenerator.swift; sourceTree = "<group>"; };
 		48539B0E515B0A56C29DA2CE /* StatsHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsHeaderView.swift; sourceTree = "<group>"; };
 		4B73B0FF4F23D09FCB3E577B /* TechInterview100.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = TechInterview100.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E6C789F5C888E9FCDC1C5A7 /* QuestionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionRowView.swift; sourceTree = "<group>"; };
@@ -53,6 +57,7 @@
 				F8168C1521BCDA4CB922C3DF /* AppState.swift */,
 				E47F1D2B94ECC74520BF235B /* DataLoader.swift */,
 				06B4FCC9D7E88A3FB2228D7B /* Question.swift */,
+				30B9E5D2D9E08B1AAAE5B993 /* QuestionRecord.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -65,6 +70,14 @@
 				48539B0E515B0A56C29DA2CE /* StatsHeaderView.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		87080B7D3E6B655811B92105 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				3E2751E0380B17F5B10095AB /* PDFGenerator.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		B69777A26932E33274576E99 = {
@@ -82,6 +95,7 @@
 				5795E7FE68D24940859DD20D /* Info.plist */,
 				BE9316C3FE9A689D80364AA0 /* TechInterview100App.swift */,
 				20E967EEAF30BE3C714A66DD /* Models */,
+				87080B7D3E6B655811B92105 /* Services */,
 				DF56F6195557B17EC94965F0 /* Views */,
 			);
 			path = TechInterview100;
@@ -169,9 +183,11 @@
 				1F0BDAA7A209B44DF4D8D27D /* DataLoader.swift in Sources */,
 				BAAEDD29188EF663C6C77BFA /* FilterBarView.swift in Sources */,
 				B25D5D2D7A563066FE0BDA35 /* HTMLText.swift in Sources */,
+				B3F92AE9B4B8A635DBBD764D /* PDFGenerator.swift in Sources */,
 				3819286BC6F90EB4088A8B75 /* Question.swift in Sources */,
 				79DEC4480BD6DD83E2490758 /* QuestionDetailView.swift in Sources */,
 				61FCA82FCBA9FC7CC329A5EE /* QuestionListView.swift in Sources */,
+				9F50E77891884F5B19745F86 /* QuestionRecord.swift in Sources */,
 				388B9E21DE37A0DBA2247DD5 /* QuestionRowView.swift in Sources */,
 				BCC75D83BCD8C26FDC4687D5 /* StatsHeaderView.swift in Sources */,
 				2D4CAC73162BA0841C7AF128 /* TechInterview100App.swift in Sources */,
@@ -232,7 +248,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -289,7 +305,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -308,7 +324,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = TechInterview100/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -328,7 +344,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = TechInterview100/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

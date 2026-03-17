@@ -1,7 +1,31 @@
 import SwiftUI
+import SwiftData
 
 struct QuestionListView: View {
     @EnvironmentObject var appState: AppState
+    @Query private var records: [QuestionRecord]
+
+    private func recordStatus(for id: Int) -> QuestionStatus? {
+        guard let r = records.first(where: { $0.questionId == id }), !r.status.isEmpty
+        else { return nil }
+        return QuestionStatus(rawValue: r.status)
+    }
+
+    private var displayedQuestions: [Question] {
+        appState.questions.filter { q in
+            let status = recordStatus(for: q.id)
+            let matchFilter: Bool
+            switch appState.selectedFilter {
+            case .all:                   matchFilter = true
+            case .mastered:              matchFilter = status == .mastered
+            case .unknown:               matchFilter = status == .unknown
+            case .category(let cat):     matchFilter = q.cat == cat
+            }
+            let matchSearch = appState.searchText.isEmpty
+                || q.q.localizedCaseInsensitiveContains(appState.searchText)
+            return matchFilter && matchSearch
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -10,15 +34,18 @@ struct QuestionListView: View {
             FilterBarView()
             Divider()
 
-            if appState.filteredQuestions.isEmpty {
+            if displayedQuestions.isEmpty {
                 emptyState
             } else {
                 List {
-                    ForEach(appState.filteredQuestions) { question in
+                    ForEach(displayedQuestions) { question in
                         NavigationLink {
                             QuestionDetailView(question: question)
                         } label: {
-                            QuestionRowView(question: question)
+                            QuestionRowView(
+                                question: question,
+                                status: recordStatus(for: question.id)
+                            )
                         }
                         .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
                     }

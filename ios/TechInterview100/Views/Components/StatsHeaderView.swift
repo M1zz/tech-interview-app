@@ -1,13 +1,19 @@
 import SwiftUI
+import SwiftData
 
 struct StatsHeaderView: View {
     @EnvironmentObject var appState: AppState
+    @Query private var records: [QuestionRecord]
+
+    private var masteredCount: Int { records.filter { $0.status == "mastered" }.count }
+    private var partialCount:  Int { records.filter { $0.status == "partial"  }.count }
+    private var unknownCount:  Int { records.filter { $0.status == "unknown"  }.count }
 
     var body: some View {
         VStack(spacing: 12) {
             // Progress bar
             VStack(alignment: .leading, spacing: 6) {
-                Text(appState.progressLabel)
+                Text(appState.progressLabel(mastered: masteredCount))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -20,11 +26,11 @@ struct StatsHeaderView: View {
                             .fill(Color.green)
                             .frame(
                                 width: appState.totalCount > 0
-                                    ? geo.size.width * CGFloat(appState.masteredCount) / CGFloat(appState.totalCount)
+                                    ? geo.size.width * CGFloat(masteredCount) / CGFloat(appState.totalCount)
                                     : 0,
                                 height: 8
                             )
-                            .animation(.easeInOut(duration: 0.3), value: appState.masteredCount)
+                            .animation(.easeInOut(duration: 0.3), value: masteredCount)
                     }
                 }
                 .frame(height: 8)
@@ -32,11 +38,11 @@ struct StatsHeaderView: View {
 
             // Stat counters
             HStack(spacing: 0) {
-                StatChip(count: appState.masteredCount, label: appState.statMasteredLabel, color: .green)
+                StatChip(count: masteredCount, label: appState.statMasteredLabel, color: .green)
                 Divider().frame(height: 32)
-                StatChip(count: appState.partialCount, label: appState.statPartialLabel, color: .orange)
+                StatChip(count: partialCount,  label: appState.statPartialLabel,  color: .orange)
                 Divider().frame(height: 32)
-                StatChip(count: appState.unknownCount, label: appState.statUnknownLabel, color: .red)
+                StatChip(count: unknownCount,  label: appState.statUnknownLabel,  color: .red)
             }
             .background(Color(.systemGray6))
             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -57,6 +63,8 @@ private struct StatChip: View {
             Text("\(count)")
                 .font(.title3.bold())
                 .foregroundStyle(color)
+                .contentTransition(.numericText())
+                .animation(.easeInOut(duration: 0.2), value: count)
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)

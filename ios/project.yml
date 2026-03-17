@@ -3,20 +3,20 @@ name: TechInterview100
 options:
   bundleIdPrefix: com.leeo
   deploymentTarget:
-    iOS: "16.0"
+    iOS: "17.0"
   defaultConfig: Debug
   xcodeVersion: "15.0"
   createIntermediateGroups: true
 
 settings:
   SWIFT_VERSION: "5.9"
-  IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+  IPHONEOS_DEPLOYMENT_TARGET: "17.0"
 
 targets:
   TechInterview100:
     type: application
     platform: iOS
-    deploymentTarget: "16.0"
+    deploymentTarget: "17.0"
     sources:
       - path: TechInterview100
         excludes:

@@ -2,11 +2,7 @@ import SwiftUI
 
 struct QuestionRowView: View {
     let question: Question
-    @EnvironmentObject var appState: AppState
-
-    private var status: QuestionStatus? {
-        appState.getStatus(question.id)
-    }
+    let status: QuestionStatus?
 
     var body: some View {
         HStack(spacing: 12) {
@@ -16,7 +12,7 @@ struct QuestionRowView: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 24, alignment: .trailing)
 
-            // Question text
+            // Question text + category
             VStack(alignment: .leading, spacing: 4) {
                 Text(question.q)
                     .font(.subheadline)
@@ -33,15 +29,9 @@ struct QuestionRowView: View {
             Spacer()
 
             // Status indicator
-            if let status = status {
-                Circle()
-                    .fill(status.color)
-                    .frame(width: 8, height: 8)
-            } else {
-                Circle()
-                    .fill(Color(.systemGray4))
-                    .frame(width: 8, height: 8)
-            }
+            Circle()
+                .fill(status?.color ?? Color(.systemGray4))
+                .frame(width: 8, height: 8)
         }
         .padding(.vertical, 10)
     }

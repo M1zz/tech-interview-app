@@ -1,8 +1,12 @@
 import SwiftUI
+import SwiftData
 
 struct QuestionDetailView: View {
     let question: Question
     @EnvironmentObject var appState: AppState
+    @Environment(\.modelContext) private var modelContext
+
+    @Query private var allRecords: [QuestionRecord]
 
     @State private var recallText: String = ""
     @State private var showAnswer: Bool = false
@@ -10,15 +14,19 @@ struct QuestionDetailView: View {
     @State private var showTrapExplanation: Bool = false
     @State private var toastMessage: String = ""
     @State private var showToast: Bool = false
+    @State private var didLoad: Bool = false
+
+    private var record: QuestionRecord? {
+        allRecords.first { $0.questionId == question.id }
+    }
 
     private var currentStatus: QuestionStatus? {
-        appState.getStatus(question.id)
+        record?.questionStatus
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                // Question header
                 questionHeader
 
                 Divider()
@@ -29,25 +37,21 @@ struct QuestionDetailView: View {
                     .padding(.top, 20)
 
                 if showAnswer {
-                    // Stage 2: Model Answer
                     stageDivider
                     stage2View
                         .padding(.horizontal, 16)
                         .padding(.top, 20)
 
-                    // Stage 3: Self Assessment
                     stageDivider
                     stage3View
                         .padding(.horizontal, 16)
                         .padding(.top, 20)
 
-                    // Stage 4: Follow-up Questions
                     stageDivider
                     stage4View
                         .padding(.horizontal, 16)
                         .padding(.top, 20)
 
-                    // Stage 5: Spot the Misconception
                     stageDivider
                     stage5View
                         .padding(.horizontal, 16)
@@ -66,21 +70,20 @@ struct QuestionDetailView: View {
             }
         }
         .animation(.easeInOut(duration: 0.25), value: showToast)
-        .onAppear {
-            if currentStatus != nil {
-                showAnswer = true
-            }
+        .onAppear { loadFromRecord() }
+        .onChange(of: allRecords) { _, _ in
+            if !didLoad { loadFromRecord() }
         }
+        .onDisappear { saveRecall() }
     }
 
-    // MARK: - Question Header
+    // MARK: - Question header
 
     private var questionHeader: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Text(question.cat)
-                    .font(.caption)
-                    .fontWeight(.semibold)
+                    .font(.caption.bold())
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color.accentColor.opacity(0.12))
@@ -91,13 +94,11 @@ struct QuestionDetailView: View {
                     Text(status.icon)
                         .font(.caption)
                 }
-
                 Spacer()
             }
 
             Text(question.q)
-                .font(.body)
-                .fontWeight(.medium)
+                .font(.body.weight(.medium))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 16)
@@ -108,12 +109,13 @@ struct QuestionDetailView: View {
 
     private var stage1View: some View {
         VStack(alignment: .leading, spacing: 12) {
-            stageLabel(appState.stage1Label)
+            stageLabel(appState.stage1Label, color: .accentColor)
 
             Text(appState.stage1Prompt)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
+            // TextEditor with placeholder overlay
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(Color(.systemGray6))
@@ -137,13 +139,13 @@ struct QuestionDetailView: View {
                     .background(Color.clear)
                     .opacity(showAnswer ? 0.6 : 1.0)
                     .disabled(showAnswer)
+                    .onChange(of: recallText) { _, _ in autoSaveRecall() }
             }
 
             if !showAnswer {
                 Button {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        showAnswer = true
-                    }
+                    saveRecall()
+                    withAnimation(.easeInOut(duration: 0.3)) { showAnswer = true }
                 } label: {
                     Text(appState.revealBtnLabel)
                         .font(.subheadline.bold())
@@ -162,7 +164,7 @@ struct QuestionDetailView: View {
 
     private var stage2View: some View {
         VStack(alignment: .leading, spacing: 12) {
-            stageLabel(appState.stage2Label)
+            stageLabel(appState.stage2Label, color: .accentColor)
 
             HTMLText(html: question.a)
                 .font(.body)
@@ -194,30 +196,16 @@ struct QuestionDetailView: View {
 
     private var stage3View: some View {
         VStack(alignment: .leading, spacing: 12) {
-            stageLabel(appState.stage3Label)
+            stageLabel(appState.stage3Label, color: .accentColor)
 
             Text(appState.stage3Subtitle)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
             VStack(spacing: 8) {
-                AssessButton(
-                    title: appState.assessUnknown,
-                    status: .unknown,
-                    isSelected: currentStatus == .unknown
-                ) { assess(.unknown) }
-
-                AssessButton(
-                    title: appState.assessPartial,
-                    status: .partial,
-                    isSelected: currentStatus == .partial
-                ) { assess(.partial) }
-
-                AssessButton(
-                    title: appState.assessMastered,
-                    status: .mastered,
-                    isSelected: currentStatus == .mastered
-                ) { assess(.mastered) }
+                AssessButton(title: appState.assessUnknown,  status: .unknown,  isSelected: currentStatus == .unknown)  { assess(.unknown) }
+                AssessButton(title: appState.assessPartial,  status: .partial,  isSelected: currentStatus == .partial)  { assess(.partial) }
+                AssessButton(title: appState.assessMastered, status: .mastered, isSelected: currentStatus == .mastered) { assess(.mastered) }
             }
         }
     }
@@ -226,25 +214,18 @@ struct QuestionDetailView: View {
 
     private var stage4View: some View {
         VStack(alignment: .leading, spacing: 12) {
-            stageLabel(appState.stage4Label)
+            stageLabel(appState.stage4Label, color: .accentColor)
 
             VStack(spacing: 0) {
                 ForEach(Array(question.fqs.enumerated()), id: \.offset) { idx, fq in
-                    FollowUpRow(
-                        fq: fq,
-                        isExpanded: expandedFollowUps.contains(idx),
-                        onToggle: {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                if expandedFollowUps.contains(idx) {
-                                    expandedFollowUps.remove(idx)
-                                } else {
-                                    expandedFollowUps.insert(idx)
-                                }
-                            }
+                    FollowUpRow(fq: fq, isExpanded: expandedFollowUps.contains(idx)) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            if expandedFollowUps.contains(idx) { expandedFollowUps.remove(idx) }
+                            else { expandedFollowUps.insert(idx) }
                         }
-                    )
+                    }
                     if idx < question.fqs.count - 1 {
-                        Divider().padding(.leading, 16)
+                        Divider().padding(.leading, 14)
                     }
                 }
             }
@@ -257,75 +238,99 @@ struct QuestionDetailView: View {
 
     private var stage5View: some View {
         VStack(alignment: .leading, spacing: 12) {
-            stageLabel(appState.stage5Label)
+            stageLabel(appState.stage5Label, color: .red)
 
             Text(appState.trapPrompt)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            VStack(alignment: .leading, spacing: 8) {
-                HTMLText(html: question.trap.wrong)
+            HTMLText(html: question.trap.wrong)
+                .font(.body)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.red.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.red.opacity(0.2)))
+
+            if showTrapExplanation {
+                HTMLText(html: question.trap.explain)
                     .font(.body)
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.red.opacity(0.08))
+                    .background(Color.green.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .strokeBorder(Color.red.opacity(0.2), lineWidth: 1)
-                    )
-
-                if showTrapExplanation {
-                    HTMLText(html: question.trap.explain)
-                        .font(.body)
-                        .padding(12)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.green.opacity(0.08))
+                    .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Color.green.opacity(0.2)))
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            } else {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.25)) { showTrapExplanation = true }
+                } label: {
+                    Text(appState.trapBtnLabel)
+                        .font(.subheadline.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color(.systemGray5))
+                        .foregroundStyle(Color.primary)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .strokeBorder(Color.green.opacity(0.2), lineWidth: 1)
-                        )
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                } else {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            showTrapExplanation = true
-                        }
-                    } label: {
-                        Text(appState.trapBtnLabel)
-                            .font(.subheadline.bold())
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color(.systemGray5))
-                            .foregroundStyle(Color.primary)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                    .buttonStyle(.plain)
                 }
+                .buttonStyle(.plain)
             }
         }
     }
 
     // MARK: - Helpers
 
-    private func stageLabel(_ text: String) -> some View {
+    private func stageLabel(_ text: String, color: Color) -> some View {
         Text(text)
             .font(.footnote.bold())
-            .foregroundStyle(Color.accentColor)
-            .textCase(.uppercase)
+            .foregroundStyle(color)
     }
 
     private var stageDivider: some View {
-        Color(.systemGray5)
-            .frame(height: 1)
-            .padding(.top, 24)
+        Color(.systemGray5).frame(height: 1).padding(.top, 24)
+    }
+
+    // MARK: - SwiftData persistence
+
+    private func loadFromRecord() {
+        guard !didLoad else { return }
+        if let r = record {
+            recallText = r.recallText
+            if r.questionStatus != nil { showAnswer = true }
+            didLoad = true
+        }
+    }
+
+    private func autoSaveRecall() {
+        // Debounced auto-save handled on disappear; do quick insert if no record yet
+        if record == nil && !recallText.isEmpty {
+            let r = QuestionRecord(questionId: question.id, recallText: recallText)
+            modelContext.insert(r)
+        }
+    }
+
+    private func saveRecall() {
+        if let r = record {
+            if r.recallText != recallText {
+                r.recallText = recallText
+                r.updatedAt = Date()
+            }
+        } else if !recallText.isEmpty {
+            let r = QuestionRecord(questionId: question.id, recallText: recallText)
+            modelContext.insert(r)
+        }
     }
 
     private func assess(_ status: QuestionStatus) {
-        appState.setStatus(question.id, status)
-        let msg = appState.toastMessage(for: status)
-        showToastMessage(msg)
+        if let r = record {
+            r.status = status.rawValue
+            r.recallText = recallText
+            r.updatedAt = Date()
+        } else {
+            let r = QuestionRecord(questionId: question.id, recallText: recallText, status: status.rawValue)
+            modelContext.insert(r)
+        }
+        showToastMessage(appState.toastMessage(for: status))
     }
 
     private func showToastMessage(_ msg: String) {
@@ -385,8 +390,7 @@ private struct FollowUpRow: View {
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                         .foregroundStyle(Color.accentColor)
                     Text(fq.q)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(.subheadline.weight(.medium))
                         .foregroundStyle(Color.primary)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(.leading)

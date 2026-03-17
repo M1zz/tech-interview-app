@@ -289,7 +289,6 @@ function updateStats() {
     else if (s === 'partial') p++;
     else if (s === 'unknown') u++;
   });
-  document.getElementById('masteredCount').textContent = m;
   document.getElementById('statMastered').textContent  = m;
   document.getElementById('statPartial').textContent   = p;
   document.getElementById('statUnknown').textContent   = u;
